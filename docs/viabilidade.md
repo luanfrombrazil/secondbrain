@@ -1,6 +1,6 @@
 # Viabilidade técnica
 
-> Esta análise foi feita quando a ideia ainda era parte do Overtimer (Java e Swing). Agora o projeto é independente, e a tecnologia está em aberto. As ferramentas abaixo continuam sendo referências úteis.
+> Esta análise foi feita quando a ideia ainda era parte do Overtimer (Java e Swing). A stack do projeto independente já foi decidida: Java 25, JavaFX e Maven. Ver [stack](stack.md) para como cada peça abaixo se encaixa nela.
 
 ## Peça por peça
 

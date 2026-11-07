@@ -85,6 +85,7 @@ O estado aparece numa **faixa colorida no topo do card**, sem rótulo de texto.
 | [Decisões](docs/decisoes.md) | O que já foi decidido, com data |
 | [Ideias em aberto](docs/ideias-em-aberto.md) | Perguntas sem resposta e ideias para avaliar |
 | [Viabilidade técnica](docs/viabilidade.md) | O que é fácil, o que é difícil e as ferramentas que existem |
+| [Stack](docs/stack.md) | Java 25, JavaFX e Maven, e como cada peça do app se encaixa |
 
 ---
 

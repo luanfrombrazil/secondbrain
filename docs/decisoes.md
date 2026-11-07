@@ -19,3 +19,4 @@
 | D-15 | A barra do editor LaTeX usa ícones em grupos: desfazer/refazer, estilo, negrito/itálico, matemática/símbolos, link/comentário/rótulo/citação/figura/tabela, lista. | 06/11/2026 |
 | D-16 | Uma nova trilha é criada direto na árvore, com o campo de nome aberto, sem diálogo. | 06/11/2026 |
 | D-17 | As informações da nota que não são texto são editadas num editor do card que abre no lugar do card (clique duplo ou criação), com o PDF ao lado e uma interface única com card, `.tex` e PDF. | 06/11/2026 |
+| D-18 | A stack é Java 25, JavaFX e Maven. Ver [stack](stack.md). | 07/11/2026 |
