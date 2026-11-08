@@ -73,7 +73,7 @@ final class GraphRenderer {
         if (t.groupByFolder) {
             drawFolders(t, g, c);
         }
-        t.backdrop.draw(g, c, width, height);
+        t.backdrop.draw(g, c, width, height, t.parameters());
 
         if (t.showConnections) {
             drawConnections(t, g, c, width, height);
