@@ -10,6 +10,7 @@ A ordem em que o app é construído. Cada fase só começa depois de a anterior 
 | **3. Notas** | Só `.tex`: editor, Tectonic embutido, PDF no papel lateral, preâmbulo comum |
 | **4. Ligações** | Links e `\nota`, notas fantasmas, arquivos no grafo, mudanças por fora, estado de erro |
 | **5. Módulos** | Um por vez: editor do card e propriedades, kanban, lista e filtros, calendário, bibliografia e compor documento, SyncTeX e EPUB, troca rápida e paleta, instalador |
+| **Acabamento visual** | Quando boa parte do app já funcionar: deixar botões, barras, explorador, fontes e cores iguais às Telas v2 do Figma. Até lá o visual é provisório |
 | **Depois do app pronto** | Atualização com compatibilidade com `.md` |
 
 ## Branches
