@@ -362,7 +362,7 @@ final class MainView extends BorderPane implements GraphEditor {
             closeNoteEditor();
             vault.fillIfEmpty(editor.track(), card);
             noteEditor = new NoteEditorPane(vault.notePath(card), vault.cacheFolder(card),
-                    editor.track().preamble(), card.title(), this::closeNoteEditor);
+                    editor.track()::preamble, card::title, this::closeNoteEditor);
             // As in the screens: while writing, the graph gives way to the editor and the preview.
             noteArea.setCenter(noteEditor);
             noteArea.setLeft(cardEditor);

@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 
 /**
  * A note: the .tex on the left and its PDF on the right. Saves about a second after the user
@@ -39,8 +40,8 @@ public final class NoteEditorPane extends BorderPane {
 
     private final Path texFile;
     private final Path cacheFolder;
-    private final String preamble;
-    private final String title;
+    private final Supplier<String> preamble;
+    private final Supplier<String> title;
     private final Optional<TectonicCompiler> compiler;
     private final CodeArea code;
     private final PdfView pdf = new PdfView();
@@ -53,7 +54,8 @@ public final class NoteEditorPane extends BorderPane {
     private boolean compileAgain;
 
     /** @param cacheFolder where the compiled PDF goes; it only leaves the cache on export (D-53) */
-    public NoteEditorPane(Path texFile, Path cacheFolder, String preamble, String title, Runnable onClose) throws IOException {
+    public NoteEditorPane(Path texFile, Path cacheFolder, Supplier<String> preamble, Supplier<String> title,
+                          Runnable onClose) throws IOException {
         this.texFile = texFile;
         this.preamble = preamble;
         this.title = title;
@@ -119,7 +121,7 @@ public final class NoteEditorPane extends BorderPane {
     public void saveNow() {
         typingPause.stop();
         try {
-            String text = NoteDocument.compose(preamble, title, code.getText());
+            String text = NoteDocument.compose(preamble.get(), title.get(), code.getText());
             if (!text.equals(Files.readString(texFile, StandardCharsets.UTF_8))) {
                 Files.writeString(texFile, text, StandardCharsets.UTF_8);
             }
@@ -145,7 +147,7 @@ public final class NoteEditorPane extends BorderPane {
         compiling = true;
         status.setText("Compilando…");
         long request = latestCompile.incrementAndGet();
-        String content = NoteDocument.compose(preamble, title, code.getText());
+        String content = NoteDocument.compose(preamble.get(), title.get(), code.getText());
         Thread.ofVirtual().start(() -> {
             TectonicCompiler.Result result;
             try {
@@ -180,7 +182,7 @@ public final class NoteEditorPane extends BorderPane {
             status.setText("Erro na compilação.");
             return;
         }
-        int header = NoteDocument.headerLines(preamble, title);
+        int header = NoteDocument.headerLines(preamble.get(), title.get());
         TectonicCompiler.Problem first = problems.getFirst();
         int firstLine = first.line() - header;
         status.setText(firstLine > 0
