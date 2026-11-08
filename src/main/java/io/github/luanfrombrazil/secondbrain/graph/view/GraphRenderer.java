@@ -347,7 +347,7 @@ final class GraphRenderer {
                 continue;
             }
             boolean ofFocusedCard = touches(a, t.focus) || touches(a, t.selected) || touches(a, t.hovered);
-            double opacity = ofFocusedCard || t.level.compareTo(ZoomLevel.MEDIUM) < 0 ? 1 : Math.min(
+            double opacity = ofFocusedCard || t.level == ZoomLevel.FARTHEST ? 1 : Math.min(
                     closeness(c.screenX(o.x), c.screenY(o.y), width, height),
                     closeness(c.screenX(d.x), c.screenY(d.y), width, height));
             if (opacity <= 0) {
