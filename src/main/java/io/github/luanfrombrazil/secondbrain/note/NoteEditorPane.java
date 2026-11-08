@@ -8,6 +8,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.util.Duration;
@@ -24,12 +28,13 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * A note: the .tex on the left and its PDF on the right. Saves and compiles about a second
- * after the user stops typing; a failed compilation never removes the last good PDF.
+ * A note: the .tex on the left and its PDF on the right. Saves about a second after the user
+ * stops typing; compiles only on Ctrl S or the button. A failed compilation never removes the last good PDF.
  */
 public final class NoteEditorPane extends BorderPane {
 
     private static final double TYPING_PAUSE_SECONDS = 1;
+    private static final KeyCombination SAVE = new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN);
     private static final String ERROR_LINE_STYLE = "tex-error-line";
 
     private final Path texFile;
@@ -66,17 +71,28 @@ public final class NoteEditorPane extends BorderPane {
             typingPause.playFromStart();
         });
         code.setStyleSpans(0, TexHighlighter.styles(code.getText()));
-        typingPause.setOnFinished(e -> saveAndCompile());
+        typingPause.setOnFinished(e -> {
+            saveNow();
+            status.setText("Salvo");
+        });
 
         Button close = new Button("Fechar nota");
         close.setOnAction(e -> {
             saveNow();
             onClose.run();
         });
+        Button compileButton = new Button("Compilar");
+        compileButton.setOnAction(e -> saveAndCompile());
+        addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (SAVE.match(e)) {
+                saveAndCompile();
+                e.consume();
+            }
+        });
         ToggleButton reading = new ToggleButton("Só leitura");
         reading.setOnAction(e -> setReading(reading.isSelected()));
         status.getStyleClass().add("label-text");
-        HBox bar = new HBox(8, close, reading, status);
+        HBox bar = new HBox(8, close, compileButton, reading, status);
         bar.setPadding(new Insets(6, 10, 6, 10));
         bar.getStyleClass().add("panel");
 
@@ -89,7 +105,6 @@ public final class NoteEditorPane extends BorderPane {
         if (Files.exists(existing)) {
             pdf.show(existing);
         }
-        saveAndCompile();
     }
 
     private void setReading(boolean reading) {
