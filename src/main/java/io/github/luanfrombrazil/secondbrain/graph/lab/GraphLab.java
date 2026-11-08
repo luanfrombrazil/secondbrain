@@ -131,11 +131,6 @@ public final class GraphLab extends BorderPane {
             view.markDirty();
         });
 
-        title("Fundo");
-        visualSlider("Opacidade", 0, 0.6, () -> parameters.backdropOpacity, v -> parameters.backdropOpacity = v);
-        visualSlider("Tamanho da grade", 20, 400, () -> parameters.backdropStep, v -> parameters.backdropStep = v);
-        visualSlider("Menor quadrinho na tela", 10, 60, () -> parameters.backdropMinScreenStep, v -> parameters.backdropMinScreenStep = v);
-        visualSlider("Espessura", 0.5, 3, () -> parameters.backdropLineWidth, v -> parameters.backdropLineWidth = v);
 
         title("Zoom semântico (escala de cada troca)");
         String[] names = {"Bolinha → miniatura", "Miniatura → afastado", "Afastado → médio", "Médio → próximo"};
@@ -175,13 +170,6 @@ public final class GraphLab extends BorderPane {
             if (owners.contains(view.layoutType())) {
                 view.recomputeFollowingCenter();
             }
-        });
-    }
-
-    private void visualSlider(String text, double min, double max, DoubleSupplier getter, Consumer<Double> setter) {
-        addSlider(text, min, max, getter, value -> {
-            setter.accept(value);
-            view.markDirty();
         });
     }
 

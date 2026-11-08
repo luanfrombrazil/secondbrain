@@ -1,6 +1,5 @@
 package io.github.luanfrombrazil.secondbrain.graph.view;
 
-import io.github.luanfrombrazil.secondbrain.graph.Parameters;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
@@ -8,6 +7,10 @@ import javafx.scene.paint.Color;
 public enum Backdrop {
     PLAIN("Liso"), LINED("Pautado"), DOTTED("Pontilhado"), GRID("Quadriculado");
 
+    private static final double WORLD_STEP = 230;
+    private static final double MIN_SCREEN_STEP = 15;
+    private static final double OPACITY = 0.2;
+    private static final double LINE_WIDTH = 1.2;
     private static final Color COLOR = Color.web("#8d93a3");
 
     private final String name;
@@ -21,19 +24,18 @@ public enum Backdrop {
         return name;
     }
 
-    void draw(GraphicsContext g, Camera c, double width, double height, Parameters p) {
+    void draw(GraphicsContext g, Camera c, double width, double height) {
         if (this == PLAIN) {
             return;
         }
-        double minScreenStep = p.backdropMinScreenStep;
-        double minorStep = p.backdropStep * c.scale();
-        while (minorStep < minScreenStep) {
+        double minorStep = WORLD_STEP * c.scale();
+        while (minorStep < MIN_SCREEN_STEP) {
             minorStep *= 5;
         }
-        while (minorStep >= minScreenStep * 5) {
+        while (minorStep >= MIN_SCREEN_STEP * 5) {
             minorStep /= 5;
         }
-        double t = Math.log(minorStep / minScreenStep) / Math.log(5);
+        double t = Math.log(minorStep / MIN_SCREEN_STEP) / Math.log(5);
         double ramp = Math.min(1, t * 2);
         double fadeIn = ramp * ramp * (3 - 2 * ramp);
         double majorStep = minorStep * 5;
@@ -42,15 +44,15 @@ public enum Backdrop {
         double originY = c.screenY(0);
         g.setStroke(COLOR);
         g.setFill(COLOR);
-        g.setLineWidth(p.backdropLineWidth);
-        g.setGlobalAlpha(p.backdropOpacity * fadeIn);
-        mark(g, minorStep, originX, originY, width, height, p.backdropLineWidth);
-        g.setGlobalAlpha(p.backdropOpacity);
-        mark(g, majorStep, originX, originY, width, height, p.backdropLineWidth);
+        g.setLineWidth(LINE_WIDTH);
+        g.setGlobalAlpha(OPACITY * fadeIn);
+        mark(g, minorStep, originX, originY, width, height);
+        g.setGlobalAlpha(OPACITY);
+        mark(g, majorStep, originX, originY, width, height);
         g.setGlobalAlpha(1);
     }
 
-    private void mark(GraphicsContext g, double step, double ox, double oy, double width, double height, double thickness) {
+    private void mark(GraphicsContext g, double step, double ox, double oy, double width, double height) {
         double x0 = ox - Math.ceil(ox / step) * step;
         double y0 = oy - Math.ceil(oy / step) * step;
         switch (this) {
@@ -65,7 +67,7 @@ public enum Backdrop {
             case DOTTED -> {
                 for (double x = x0; x < width; x += step) {
                     for (double y = y0; y < height; y += step) {
-                        g.fillRect(x - thickness, y - thickness, 2 * thickness, 2 * thickness);
+                        g.fillRect(x - LINE_WIDTH, y - LINE_WIDTH, 2 * LINE_WIDTH, 2 * LINE_WIDTH);
                     }
                 }
             }
