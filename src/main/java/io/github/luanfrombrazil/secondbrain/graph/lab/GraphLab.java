@@ -76,7 +76,7 @@ public final class GraphLab extends BorderPane {
         backdrop.setOnAction(e -> view.setBackdrop(backdrop.getValue()));
 
         ComboBox<Integer> size = new ComboBox<>();
-        size.getItems().addAll(0, 10, 50, 200, 500, 2000);
+        size.getItems().addAll(0, 10, 50, 200, 500, 2000, 10000);
         size.setValue(50);
         size.setMaxWidth(Double.MAX_VALUE);
         size.setOnAction(e -> load(size.getValue()));

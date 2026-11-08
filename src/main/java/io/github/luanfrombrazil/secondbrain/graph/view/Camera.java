@@ -3,7 +3,7 @@ package io.github.luanfrombrazil.secondbrain.graph.view;
 /** The camera of the infinite canvas: screen = world × scale + offset. Eases toward its target. */
 public final class Camera {
 
-    public static final double MIN_SCALE = 0.03;
+    public static final double MIN_SCALE = 0.0005;
     public static final double MAX_SCALE = 2.5;
     private static final double SPEED = 14;
     private static final double CLOSE_ENOUGH = 0.05;

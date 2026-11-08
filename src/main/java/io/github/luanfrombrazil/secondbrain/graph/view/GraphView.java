@@ -68,6 +68,7 @@ public final class GraphView extends Region {
     private double focusAnchorX = Double.NaN;
     private double focusAnchorY = Double.NaN;
     private String followed;
+    private boolean frameWhenSettled;
     String connectingFrom;
     String dropTarget;
     double mouseX;
@@ -132,7 +133,14 @@ public final class GraphView extends Region {
         focusProgress = 0;
         followed = null;
         simulation = null;
-        Map<String, Point> positions = type.layout().compute(graph, parameters);
+        Map<String, Point> positions;
+        if (type == LayoutType.FORCES) {
+            simulation = new ForceSimulation(graph, parameters, Map.of());
+            positions = simulation.positions();
+            frameWhenSettled = true;
+        } else {
+            positions = type.layout().compute(graph, parameters);
+        }
         positions.forEach((id, p) -> visuals.put(id, new Visual(p)));
         frameTargets();
         camera.jumpToTarget();
@@ -145,6 +153,7 @@ public final class GraphView extends Region {
         graph = graph.withoutFixedPoints();
         recompute();
         frameTargets();
+        frameWhenSettled = type == LayoutType.FORCES;
     }
 
     /** A parameter changed: arranges again without touching the camera or loose cards. */
@@ -314,6 +323,10 @@ public final class GraphView extends Region {
             dirty = true;
             if (!keepGoing) {
                 simulation = null;
+                if (frameWhenSettled) {
+                    frameWhenSettled = false;
+                    frameTargets();
+                }
             }
         } else {
             double t = 1 - Math.exp(-seconds * CARD_SPEED);
@@ -419,11 +432,7 @@ public final class GraphView extends Region {
             return;
         }
         Map<String, Point> targets = new HashMap<>();
-        if (type == LayoutType.FORCES && simulation != null) {
-            targets.putAll(type.layout().compute(graph, parameters));
-        } else {
-            visuals.forEach((id, v) -> targets.put(id, new Point(v.targetX, v.targetY)));
-        }
+        visuals.forEach((id, v) -> targets.put(id, new Point(v.targetX, v.targetY)));
         double minX = targets.values().stream().mapToDouble(Point::x).min().orElse(0) - Node.WIDTH / 2;
         double maxX = targets.values().stream().mapToDouble(Point::x).max().orElse(0) + Node.WIDTH / 2;
         double minY = targets.values().stream().mapToDouble(Point::y).min().orElse(0) - Node.HEIGHT / 2;

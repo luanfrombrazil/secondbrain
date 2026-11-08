@@ -69,7 +69,7 @@ class ScreenshotTest {
 
     /** Prints the milliseconds per frame, including the GPU work forced by the snapshot. */
     private void benchmark() {
-        for (int size : new int[]{200, 2000}) {
+        for (int size : new int[]{200, 2000, 10000}) {
             GraphView view = new GraphView(new Parameters());
             view.stopAnimation();
             new Scene(view, WIDTH, HEIGHT);
