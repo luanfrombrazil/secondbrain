@@ -64,6 +64,8 @@ final class MainView extends BorderPane implements GraphEditor {
     private final TreeView<Entry> explorer = new TreeView<>();
     private final HBox path = new HBox(4);
     private final Pane overlay = new Pane();
+    private final StackPane graphArea = new StackPane(graphView, overlay);
+    private final BorderPane noteArea = new BorderPane();
     private final Label status = new Label();
     private final TextField newTrackName = new TextField();
     private LevelEditor editor;
@@ -78,7 +80,7 @@ final class MainView extends BorderPane implements GraphEditor {
 
         setTop(topBar());
         setLeft(explorerPanel());
-        setCenter(new StackPane(graphView, overlay));
+        setCenter(graphArea);
         status.getStyleClass().add("label-text");
         status.setPadding(new Insets(4, 10, 4, 10));
         setBottom(status);
@@ -188,6 +190,7 @@ final class MainView extends BorderPane implements GraphEditor {
     }
 
     private void openTrack(Track track) throws IOException {
+        closeNoteEditor();
         closeCardEditor();
         editor = editors.containsKey(track) ? editors.get(track) : new LevelEditor(vault, track);
         editors.put(track, editor);
@@ -344,6 +347,7 @@ final class MainView extends BorderPane implements GraphEditor {
 
                 @Override
                 public void openInnerGraph(Card card) {
+                    closeNoteEditor();
                     closeCardEditor();
                     editor.open(card);
                     showLevel(true);
@@ -359,9 +363,11 @@ final class MainView extends BorderPane implements GraphEditor {
             vault.fillIfEmpty(editor.track(), card);
             noteEditor = new NoteEditorPane(vault.notePath(card), vault.cacheFolder(card),
                     editor.track().preamble(), card.title(), this::closeNoteEditor);
-            noteEditor.setPrefWidth(getWidth() * 0.55);
-            setRight(noteEditor);
-            cardEditor = null;
+            // As in the screens: while writing, the graph gives way to the editor and the preview.
+            noteArea.setCenter(noteEditor);
+            noteArea.setLeft(cardEditor);
+            setRight(null);
+            setCenter(noteArea);
         });
     }
 
@@ -369,12 +375,16 @@ final class MainView extends BorderPane implements GraphEditor {
         if (noteEditor != null) {
             noteEditor.saveNow();
             noteEditor = null;
-            setRight(null);
+            noteArea.setCenter(null);
+            noteArea.setLeft(null);
+            setCenter(graphArea);
+            setRight(cardEditor);
         }
     }
 
     private void closeCardEditor() {
         cardEditor = null;
+        noteArea.setLeft(null);
         setRight(null);
     }
 
