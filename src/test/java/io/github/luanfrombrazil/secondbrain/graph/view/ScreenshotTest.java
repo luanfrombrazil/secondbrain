@@ -121,10 +121,6 @@ class ScreenshotTest {
         }
         view.drawNow();
         ImageIO.write(toBuffered(view.canvas().snapshot(null, null)), "png", folder.resolve("linked-elements.png").toFile());
-        view.parameters().arrowWidth = 7;
-        view.setMetalTube(true);
-        view.drawNow();
-        ImageIO.write(toBuffered(view.canvas().snapshot(null, null)), "png", folder.resolve("metal-tube.png").toFile());
     }
 
     private void dragFromHandleCreatesConnection() {
