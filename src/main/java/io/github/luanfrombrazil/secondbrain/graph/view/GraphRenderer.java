@@ -324,7 +324,8 @@ final class GraphRenderer {
             if (o == null || d == null || segmentOffScreen(c, o, d, width, height)) {
                 continue;
             }
-            double opacity = t.level.compareTo(ZoomLevel.MEDIUM) < 0 ? 1 : Math.min(
+            boolean ofFocusedCard = touches(a, t.focus) || touches(a, t.selected) || touches(a, t.hovered);
+            double opacity = ofFocusedCard || t.level.compareTo(ZoomLevel.MEDIUM) < 0 ? 1 : Math.min(
                     closeness(c.screenX(o.x), c.screenY(o.y), width, height),
                     closeness(c.screenX(d.x), c.screenY(d.y), width, height));
             if (opacity <= 0) {
@@ -338,6 +339,10 @@ final class GraphRenderer {
             drawArrow(t, g, c, a, o, d, dots);
         }
         g.setGlobalAlpha(1);
+    }
+
+    private static boolean touches(Edge edge, String id) {
+        return id != null && (edge.source().equals(id) || edge.target().equals(id));
     }
 
     /**

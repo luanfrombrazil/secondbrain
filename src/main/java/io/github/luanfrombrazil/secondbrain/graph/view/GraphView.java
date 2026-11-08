@@ -333,13 +333,15 @@ public final class GraphView extends Region {
     /** Up close, the linked elements slide to the focused card; zooming out sends them back. */
     private void updateFocus(double seconds) {
         double change = seconds / FOCUS_SECONDS;
-        if (level == ZoomLevel.NEAR) {
+        if (level.compareTo(ZoomLevel.MEDIUM) >= 0) {
             String next = findFocus();
             if (!java.util.Objects.equals(next, focus)) {
                 focus = next;
                 focusProgress = 0;
                 dirty = true;
             }
+        }
+        if (level == ZoomLevel.NEAR) {
             if (focusProgress < 1) {
                 focusProgress = Math.min(1, focusProgress + change);
                 dirty = true;
