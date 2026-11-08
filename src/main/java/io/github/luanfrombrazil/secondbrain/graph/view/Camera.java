@@ -53,6 +53,12 @@ public final class Camera {
         targetDy += deltaY;
     }
 
+    /** Eases to put this world point at the center of the screen, keeping the zoom. */
+    public void centerOn(double worldX, double worldY, double width, double height) {
+        targetDx = width / 2 - worldX * targetScale;
+        targetDy = height / 2 - worldY * targetScale;
+    }
+
     public void frame(double minX, double minY, double maxX, double maxY, double width, double height) {
         double margin = 60;
         double scaleX = (width - 2 * margin) / Math.max(1, maxX - minX);

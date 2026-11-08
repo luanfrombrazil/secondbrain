@@ -11,6 +11,18 @@ class CameraAndZoomTest {
     private static final double[] THRESHOLDS = {0.14, 0.30, 0.55, 0.86};
 
     @Test
+    void centerOnPutsThePointInTheMiddleAndKeepsTheZoom() {
+        Camera c = new Camera();
+        c.zoomAtCursor(0, 0, 0.5);
+        c.jumpToTarget();
+        c.centerOn(300, -200, 1000, 600);
+        c.jumpToTarget();
+        assertEquals(500, c.screenX(300), 1e-9);
+        assertEquals(300, c.screenY(-200), 1e-9);
+        assertEquals(0.5, c.scale(), 1e-9);
+    }
+
+    @Test
     void connectionsFadeWithDistanceFromTheScreen() {
         assertEquals(1, GraphRenderer.closeness(500, 300, 1000, 600));
         assertEquals(0.5, GraphRenderer.closeness(1375, 300, 1000, 600), 1e-9);

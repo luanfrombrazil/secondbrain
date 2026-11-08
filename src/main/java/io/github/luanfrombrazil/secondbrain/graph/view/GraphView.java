@@ -489,6 +489,13 @@ public final class GraphView extends Region {
                 createLooseCard(camera.worldX(e.getX()), camera.worldY(e.getY()));
             } else if (e.getClickCount() == 1) {
                 selected = clicked;
+                Visual visual = clicked == null ? null : visuals.get(clicked);
+                if (visual != null) {
+                    focusAnchorX = Double.NaN;
+                    focusAnchorY = Double.NaN;
+                    followed = clicked;
+                    camera.centerOn(visual.targetX, visual.targetY, getWidth(), getHeight());
+                }
             }
             dirty = true;
         }
