@@ -63,6 +63,28 @@ class ScreenshotTest {
         capture(folder, LayoutType.DEPENDENCY, 10, 0.72, "zoom-medium");
         capture(folder, LayoutType.DEPENDENCY, 10, 1.0, "zoom-near");
         dragFromHandleCreatesConnection();
+        captureLinkedElements(folder);
+    }
+
+    private void captureLinkedElements(Path folder) throws IOException {
+        GraphView view = new GraphView(new Parameters());
+        view.stopAnimation();
+        new Scene(view, WIDTH, HEIGHT);
+        view.resize(WIDTH, HEIGHT);
+        view.layout();
+        Samples.Sample sample = Samples.generate(10);
+        view.show(sample.graph(), sample.cards(), sample.pointNotes());
+        view.settle();
+        view.selected = "c0000";
+        GraphView.Visual card = view.visuals.get("c0000");
+        Camera c = view.camera();
+        c.zoomAtCursor(c.screenX(card.x), c.screenY(card.y), 1 / c.scale());
+        view.settle();
+        if (!"c0000".equals(view.focus) || view.focusProgress != 1) {
+            failure = new AssertionError("Linked elements did not reach the focused card: " + view.focus);
+        }
+        view.drawNow();
+        ImageIO.write(toBuffered(view.canvas().snapshot(null, null)), "png", folder.resolve("linked-elements.png").toFile());
     }
 
     private void dragFromHandleCreatesConnection() {
