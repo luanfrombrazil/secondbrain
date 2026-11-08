@@ -132,7 +132,7 @@ public final class GraphLab extends BorderPane {
 
 
         title("Zoom semântico (escala de cada troca)");
-        String[] names = {"Bolinha → miniatura", "Miniatura → afastado", "Afastado → médio", "Médio → próximo"};
+        String[] names = {"Bolinha → afastado", "Afastado → médio", "Médio → próximo"};
         for (int i = 0; i < names.length; i++) {
             int index = i;
             zoomSlider(names[i], () -> parameters.zoomThresholds[index], v -> parameters.zoomThresholds[index] = v);

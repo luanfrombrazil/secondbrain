@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CameraAndZoomTest {
 
-    private static final double[] THRESHOLDS = {0.14, 0.30, 0.55, 0.86};
+    private static final double[] THRESHOLDS = {0.14, 0.55, 0.86};
 
     @Test
     void centerOnPutsThePointInTheMiddleAndKeepsTheZoom() {
@@ -69,7 +69,6 @@ class CameraAndZoomTest {
     @Test
     void eachScaleMapsToTheRightLevel() {
         assertEquals(ZoomLevel.FARTHEST, ZoomLevel.forScale(0.05, ZoomLevel.MEDIUM, THRESHOLDS));
-        assertEquals(ZoomLevel.VERY_FAR, ZoomLevel.forScale(0.2, ZoomLevel.MEDIUM, THRESHOLDS));
         assertEquals(ZoomLevel.FAR, ZoomLevel.forScale(0.42, ZoomLevel.MEDIUM, THRESHOLDS));
         assertEquals(ZoomLevel.MEDIUM, ZoomLevel.forScale(0.72, ZoomLevel.MEDIUM, THRESHOLDS));
         assertEquals(ZoomLevel.NEAR, ZoomLevel.forScale(1, ZoomLevel.MEDIUM, THRESHOLDS));

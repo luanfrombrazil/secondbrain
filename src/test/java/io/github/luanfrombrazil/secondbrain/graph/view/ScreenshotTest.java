@@ -58,7 +58,6 @@ class ScreenshotTest {
         }
         capture(folder, LayoutType.DEPENDENCY, 200, null, "dependency-200");
         capture(folder, LayoutType.DEPENDENCY, 10, 0.08, "zoom-farthest");
-        capture(folder, LayoutType.DEPENDENCY, 10, 0.2, "zoom-very-far");
         capture(folder, LayoutType.DEPENDENCY, 10, 0.42, "zoom-far");
         capture(folder, LayoutType.DEPENDENCY, 10, 0.72, "zoom-medium");
         capture(folder, LayoutType.DEPENDENCY, 10, 1.0, "zoom-near");

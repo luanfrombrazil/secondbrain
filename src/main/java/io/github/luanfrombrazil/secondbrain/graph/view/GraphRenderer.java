@@ -502,33 +502,20 @@ final class GraphRenderer {
         double corner = Math.max(3, 16 * e);
         double strip = Math.max(2, 8 * e);
 
-        // Clips and stroked round shapes are very slow on Canvas, so the far levels use plain rectangles.
-        if (renderLevel.compareTo(ZoomLevel.FAR) < 0) {
-            g.setFill(COLOR_CARD);
-            g.fillRect(x, y, w, h);
-            g.setFill(card.stateColor());
-            g.fillRect(x, y, w, strip);
-            if (selected) {
-                g.setStroke(COLOR_SELECTION);
-                g.setLineWidth(2);
-                g.strokeRect(x, y, w, h);
-            }
-        } else {
-            if (renderLevel != ZoomLevel.FAR) {
-                g.setFill(COLOR_SHADOW);
-                g.fillRoundRect(x - 2, y - 2, w + 4, h + 4, corner + 3, corner + 3);
-            }
-            // The stripe wraps down the top corners: the body is a rounded card laid over a colored one.
-            g.setFill(card.stateColor());
-            g.fillRoundRect(x, y, w, strip + 2 * corner, corner, corner);
-            g.setFill(COLOR_CARD);
-            g.fillRoundRect(x, y + strip, w, h - strip, corner, corner);
+        if (renderLevel != ZoomLevel.FAR) {
+            g.setFill(COLOR_SHADOW);
+            g.fillRoundRect(x - 2, y - 2, w + 4, h + 4, corner + 3, corner + 3);
+        }
+        // The stripe wraps down the top corners: the body is a rounded card laid over a colored one.
+        g.setFill(card.stateColor());
+        g.fillRoundRect(x, y, w, strip + 2 * corner, corner, corner);
+        g.setFill(COLOR_CARD);
+        g.fillRoundRect(x, y + strip, w, h - strip, corner, corner);
 
-            if (selected || renderLevel != ZoomLevel.FAR) {
-                g.setStroke(selected ? COLOR_SELECTION : COLOR_BORDER);
-                g.setLineWidth(selected ? 2 : 1);
-                g.strokeRoundRect(x, y, w, h, corner, corner);
-            }
+        if (selected || renderLevel != ZoomLevel.FAR) {
+            g.setStroke(selected ? COLOR_SELECTION : COLOR_BORDER);
+            g.setLineWidth(selected ? 2 : 1);
+            g.strokeRoundRect(x, y, w, h, corner, corner);
         }
 
         double margin = 14 * e;
