@@ -84,7 +84,7 @@ A solução para editar as informações da nota que não são texto.
   - **vídeos** (colar o link do YouTube) e **relacionados** (vincular nota, livro ou repositório);
   - rodapé com **Excluir card** (ou Descartar, no card novo) e **Pronto**.
 - **No card novo:** o título vem focado, a escolha do tipo aparece em destaque e as seções vêm vazias.
-- **Com o PDF:** o PDF da nota aparece à direita, com abas para editar o LaTeX, abrir em página dupla ou recolher.
+- **Com o PDF:** o PDF da nota aparece à direita, com abas para editar o LaTeX ou recolher.
 - **Nota Markdown:** o editor `.md` à esquerda e o papel à direita, feito de HTML no WebView e atualizado a cada pausa, sem compilação. Clique duplo no papel leva o cursor ao trecho correspondente.
 - **Interface única:** editor do card à esquerda, editor `.tex` no centro e PDF à direita, tudo na mesma tela.
 

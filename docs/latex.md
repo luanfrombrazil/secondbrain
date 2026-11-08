@@ -39,9 +39,7 @@ Exemplo do cabeçalho de uma nota:
 
 - **Por padrão, a nota aparece como o PDF compilado.** Notas são muito mais lidas do que escritas.
 - **No grafo,** clicar num card faz um pedaço do papel **espiar** pela borda direita, com uma aba **<**. Clicar na aba abre a nota **ao lado do grafo**, com uma sombra forte separando o papel dos cards.
-- **Abas do papel:**
-  - **<** abre a **página dupla**, com duas páginas lado a lado como um livro, separadas só por um espaço de alguns milímetros (sem sombra na lombada);
-  - **>** recolhe, um passo de cada vez.
+- **Aba do papel aberto:** **>** recolhe o papel de volta para espiando. Não há página dupla (D-77).
 - **No modal do card,** o estado **Nota** mostra a folha em tela cheia.
 
 ## Edição

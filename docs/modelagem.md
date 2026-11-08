@@ -111,6 +111,7 @@ flowchart LR
         UC31([Escolher visualização padrão])
         UC32([Escolher tema])
         UC33([Editar atalhos de teclado])
+        UC65([Ajustar a física e o zoom do grafo])
         UC55([Religar propriedades órfãs])
     end
 
@@ -128,7 +129,7 @@ flowchart LR
     U --- UC19 & UC20 & UC22 & UC56 & UC57 & UC58
     UC57 -. leva a .-> UC20
     U --- UC23 & UC24
-    U --- UC18 & UC25 & UC26 & UC27 & UC28 & UC29 & UC30 & UC31 & UC32 & UC33 & UC55
+    U --- UC18 & UC25 & UC26 & UC27 & UC28 & UC29 & UC30 & UC31 & UC32 & UC33 & UC55 & UC65
     UC41 --- FS
     UC52 --- FS
 
@@ -160,6 +161,7 @@ flowchart LR
 | **Compilador LaTeX** | Usa o Tectonic embutido ou o TeX instalado na máquina. | Conversa de 07/11 |
 | **Compilação automática** | Liga ou desliga, e ajusta a espera depois de parar de digitar (padrão ~1 s). | `latex.md` |
 | **Visualização padrão** | Com que visualização uma trilha nova abre (grafo, kanban, lista, calendário), e no grafo a disposição, o fundo, mostrar links, mostrar conexões e os concluídos (normais, apagados ou ocultos). Cada trilha pode mudar. | Telas v2 |
+| **Ajustes do grafo** | Mexe nas folgas, na física da disposição por forças e nos limites do zoom semântico, vendo o grafo se rearrumar. **Restaurar padrões** volta aos valores do laboratório. | Laboratório do grafo, 08/11 |
 | **Tema** | Escuro por enquanto. Outros temas ficam para o futuro. | Proposta |
 | **Atalhos** | Ctrl Space (troca rápida), Ctrl P (paleta de comandos) e os do editor. Clicar numa tecla grava a combinação nova; conflitos aparecem marcados. | Telas v2, inspirada no Obsidian |
 
@@ -416,7 +418,7 @@ classDiagram
 - O usuário **não move cards no grafo**: a posição é calculada pelo algoritmo de disposição. No kanban, arrastar um card de coluna muda o valor da propriedade, e não uma posição.
 - **Card solto fica onde foi criado** (decidido em 07/11/2026). Criar um card num ponto do espaço é a única vez em que o usuário escolhe uma posição: o card fica **fixo** ali enquanto não tiver nenhuma conexão (dependência). Enquanto está fixo, ele **repele** os cards em volta, que se afastam numa animação que parece magnética, para não ficar nada por baixo dele. Quando ganha a primeira conexão com outro card, perde a posição fixa e passa a ser arrumado pela disposição junto com os outros. Link não solta o card; só conexão. A posição fixa fica no arquivo do card, em `.secondbrain/cards/<id>`, e é apagada quando a conexão chega. Se depois o card perder todas as conexões, ele continua onde a disposição o deixou e não volta a ficar fixo (proposta).
 - **Pasta = grafo interno.** Uma nota pode ter, ao lado, uma pasta com o mesmo nome. Essa pasta é o grafo interno do card: guarda as notas internas e os arquivos ligados a elas. Card sem pasta não tem grafo interno (e não mostra o botão maximizar). Ver a seção 2.4.
-- **Pasta comum = agrupamento** (decidido em 07/11/2026). Uma pasta da trilha que não tem nota de mesmo nome (Fundamentos, Matemática) não é card nem grafo interno: ela **agrupa** os seus cards no grafo, como um cluster. A disposição continua calculando as posições e procura manter os cards da mesma pasta juntos; o grupo aparece como uma área suave atrás deles, com o nome da pasta (proposta). O usuário pode desligar o agrupamento na visualização (`Grafo.agruparPorPasta`).
+- **Pasta comum só aproxima** (decidido em 08/11/2026, substitui o agrupamento de 07/11). Uma pasta da trilha que não tem nota de mesmo nome (Fundamentos, Matemática) não é card nem grafo interno e **não aparece no grafo**: não há contorno, área nem botão de agrupar. O único efeito dela é a **atração da pasta** na disposição por forças, que puxa os cards da mesma pasta para perto uns dos outros. Nas disposições por dependência e radial, ela não muda a ordem nem a posição dos cards. Ela continua visível no explorador.
 - **Peso vem das propriedades.** Quanto mais propriedades um card tem, mais forte ele é no grafo. Uma **nota pontual** não é um tipo à parte: é um card sem propriedade especial, só texto ou uma anotação. Por ter peso baixo, some nas visões afastadas (macro) e só aparece no zoom próximo, perto do card ligado a ela que está em foco. Se ela está ligada a vários cards, aparece junto de cada um quando o zoom foca nele. A posição dela não é fixa no grafo: é relativa ao card em foco.
 - **Documento composto (decidido em 07/11/2026):** é **só um PDF**, gerado juntando o LaTeX dos cards selecionados (um caminho de conexões ou uma seleção livre), na ordem escolhida: um resumo para a prova, um relatório, o TCC. **Não é um card**, não aparece no grafo e não tem propriedades. O `.tex` que junta as partes (um `\input` por nota) é temporário: o app compila, mostra o PDF e o usuário salva onde quiser. Para gerar de novo com as notas atualizadas, compõe outra vez.
 - **Notas `.md` no documento composto:** no futuro haverá um **tradutor de LaTeX para Markdown e de volta** (D-26), e aí cada nota `.md` da seleção é traduzida para LaTeX antes do `\input`, num arquivo temporário; a nota original não muda. Até o tradutor existir, a composição junta só as notas `.tex`, e os cards `.md` do caminho aparecem marcados como "fica de fora" no painel (proposta).
@@ -445,7 +447,6 @@ classDiagram
         mostrarLinks
         mostrarConexoes
         concluidos: normais | apagados | ocultos
-        agruparPorPasta: sim | não
     }
     class Kanban {
         agruparPor: Selecao ou Tipo
@@ -574,7 +575,7 @@ classDiagram
 - **Propriedade nova, operadores prontos:** cada tipo de propriedade traz os seus operadores. Uma propriedade nova entra nos filtros sem mexer no resto (o mesmo padrão modular das propriedades).
 - **Filtro só esconde, nunca muda nada.** Coerente com "nada é regra, tudo é informação": a "regra" do filtro decide só o que aparece na tela.
 - **No grafo, o que o filtro tira fica apagado no lugar** (decidido em 07/11/2026): o card continua no grafo, esmaecido, e a disposição não pula a cada regra nova. No kanban, na lista e no calendário, some.
-- **Onde fica salvo:** junto com a sua visualização, no arquivo da trilha, em `.secondbrain/trilhas/<id da trilha>` (seção 2.5).
+- **Onde fica salvo:** junto com a sua visualização, no arquivo da trilha, em `.secondbrain/tracks/<id da trilha>.yaml` (seção 2.5).
 
 #### 2.3.2 Datas no padrão dos calendários (decidido em 07/11/2026)
 
@@ -664,41 +665,46 @@ classDiagram
 ```
 Acervo/
   .secondbrain/                        ← pasta oculta do app
-    configuracoes                      ← as configurações do app
-    tipos/                             ← os tipos de card
-    selecoes/                          ← estados e outras seleções, com as opções
-    trilhas/
-      <id da trilha>                   ← visualizações, filtros, biblioteca, estados, tipos, seleções e preâmbulo comum da trilha
+    lock                               ← trava de uma janela por acervo
+    tracks/
+      <id da trilha>.yaml              ← nome, cor, pasta, estados e tipos da trilha; depois visualizações, filtros, biblioteca e preâmbulo comum
       <id da trilha>.bib               ← gerado pela Bibliografia, editável
     cards/
       <id do card>.yaml                ← um arquivo por card
-    elementos/
+    settings.yaml                      ← as configurações do app
+    elements/
       <id do elemento>.yaml            ← arquivo só pelo caminho, repositório, livro
     cache/                             ← PDFs compilados (vão para a pasta só ao exportar)
-    calendario/                        ← sincronização com o Google Calendar
-      contas                           ← quais calendários entram e saem (o token fica no cofre do sistema, não aqui)
-      eventos                          ← eventos importados ainda não viraram card, recusados e o syncToken
+    calendar/                          ← sincronização com o Google Calendar
+      accounts.yaml                    ← quais calendários entram e saem (o token fica no cofre do sistema, não aqui)
+      events.yaml                      ← eventos importados ainda não viraram card, recusados e o syncToken
   Engenharia de Computação/
     calculo-ii.tex                     ← só o texto; nome em slug, o título fica no arquivo do card
     calculo-ii/
 ```
 
-O arquivo de um card guarda:
-- o **caminho da nota** dentro do acervo (por exemplo `Engenharia de Computação/Cálculo II.tex`);
-- as **propriedades**: tipo, estado, tarefas, datas, bibliografia, vídeos, relacionados e as que o usuário criar;
-- as **conexões** de que ele depende (a conexão fica no arquivo do **dependente**) e os **links manuais** que saem dele;
+Os nomes dentro de `.secondbrain/` (pastas, arquivos e campos) são em inglês, como o código (D-76). Hoje o código já grava `lock`, `tracks/` e `cards/`; `settings.yaml`, `elements/`, `cache/` e `calendar/` chegam com as fases seguintes e seguem o mesmo padrão.
+
+O arquivo de uma trilha (`tracks/<id>.yaml`) guarda `version`, `id`, `name`, `color`, `folder`, os estados (`states`: `id`, `name`, `color`, `category`) e os tipos (`types`: `id`, `name`, `icon`, `properties`). Estados e tipos são de cada trilha (D-61).
+
+O arquivo de um card (`cards/<id>.yaml`) guarda:
+- `version`, `id`, a trilha (`track`) e, num grafo interno, o card pai (`parent`);
+- o **título** (`title`) e o **caminho da nota** dentro do acervo (`note`, por exemplo `Engenharia de Computação/calculo-ii.tex`);
+- o **tipo** (`type`) e as **propriedades** (`properties`, cada uma com o seu `kind`): estado, tarefas, progresso, textos, datas, bibliografia, vídeos, relacionados e as que o usuário criar;
+- as **conexões** de que ele depende (`dependencies`: a conexão fica no arquivo do **dependente**) e os **links manuais** que saem dele (`links`);
+- a **posição fixa** do card solto (`fixed`), enquanto ele não tem conexão;
 - o **estado anterior** ao último bloqueio automático, para restaurar depois (D-41).
 
 Por quê:
 - **Um arquivo por card:** cada mudança mexe num arquivo pequeno, um erro afeta um card só, e o git ou a nuvem mostram exatamente qual card mudou.
-- **Na raiz do acervo, não em cada trilha:** uma trilha montada de uma pasta externa não ganha arquivos escondidos, e os dados globais (tipos, estados, configurações) ficam juntos.
+- **Na raiz do acervo, não em cada trilha:** uma trilha montada de uma pasta externa não ganha arquivos escondidos, e os dados de todas as trilhas e as configurações ficam juntos.
 - **Por id, não pelo nome:** o arquivo do card tem um id fixo e guarda o caminho da nota. Renomear o card no app só atualiza o caminho.
 
 Cuidados:
 - **Renomear no app:** atualiza o caminho e também os links nas outras notas, sem perguntar (D-49).
 - **Renomear ou mover por fora:** com o app aberto, o `WatchService` do Java percebe e atualiza o caminho. Com o app fechado, o card fica em **erro** (vermelho, tracejado); se aparecer uma nota quase igual, ele sugere religar.
 - **Pasta existente:** ao abrir, o usuário escolhe converter todas as notas em cards de uma vez; se não, o arquivo do card nasce na primeira edição (D-48).
-- **Formato:** YAML, com um campo `versao` para migrações (D-53).
+- **Formato:** YAML, com um campo `version` para migrações (D-53, D-76).
 - **Uma janela por acervo.** Se a nota aberta muda por fora, o app pergunta se recarrega (há configuração para recarregar sempre).
 
 ---
@@ -903,7 +909,7 @@ Regras que valem para todas as linhas:
 | **Primeiro botão da direita** (o ícone muda com a aba) | Grafo: disposição e fundo. Kanban: **Agrupar por**. Lista: **Colunas**. Calendário: mês ou semana. | Fica guardado na visualização. |
 | **Filtro** | Abre o popup de regras: propriedade, operador e valor; **Adicionar regra**; × tira uma regra; **Limpar** tira todas. | Ver 2.3.1. O filtro é da aba aberta. O botão fica aceso enquanto essa aba tem filtro. |
 | **Ordenar** (só no kanban) | Escolhe a propriedade e a direção. | Ordena os cards dentro de cada coluna. Não aparece no grafo, na lista nem no calendário (2.3). |
-| **Exibição** (olho) | Interruptores de links, conexões, notas, arquivos e agrupamento por pasta, e os concluídos normais, apagados ou ocultos. | Só muda o desenho, nunca os dados. |
+| **Exibição** (olho) | Interruptores de links, conexões, notas e arquivos, e os concluídos normais, apagados ou ocultos. | Só muda o desenho, nunca os dados. |
 
 ### 5.3 Grafo
 
@@ -911,11 +917,11 @@ Regras que valem para todas as linhas:
 |---|---|---|
 | **Criar um card num ponto vazio do espaço** | O card nasce ali e fica fixo; os cards em volta se afastam numa animação magnética. | Fica fixo até ganhar a primeira conexão; daí a disposição passa a arrumá-lo (2.2). Link não solta o card. Clique duplo no vazio como gesto de criar (proposta). |
 | **Escolher a disposição** (por dependência, por forças, radial) | Os cards deslizam até o lugar novo e a câmera centraliza o grafo. | A posição é sempre calculada. Na radial, cada filho fica em volta do próprio pai, todas as setas têm o mesmo comprimento e nenhuma atravessa um card; um card com dois pais fica no ângulo entre eles. Quando um card se ramifica, todas as setas curvam e o pai fica centrado entre os filhos. |
-| **Zoom** (roda do mouse ou − e +) | O card mostra mais ou menos conforme a distância (seção de zoom em `grafo-e-conexoes.md`). | As posições não mudam entre os níveis. Ao afastar, o card vira primeiro miniatura sem texto e, no mais longe, uma bolinha na cor do estado, com tamanho pelo peso. |
+| **Zoom** (roda do mouse ou − e +) | O card mostra mais ou menos conforme a distância (seção de zoom em `grafo-e-conexoes.md`). | As posições não mudam entre os níveis. Ao afastar, o card médio vira direto uma miniatura sem texto e, no mais longe, uma bolinha na cor do estado, com tamanho pelo peso. Não há nível com texto miniaturizado. |
 | **Hover nos níveis afastados** | Mostra o título e o progresso perto do card e destaca as suas conexões. | Só desenho. |
 | **Clique num card** | Seleciona (borda) e a nota dele **espia** na borda direita do grafo: uma tira branca do papel do PDF, com a aba **<**. | No `.tex`, usa o último PDF compilado. No `.md`, o papel é o HTML da nota no WebView (4.5). Um `.tex` que nunca compilou espia com o texto puro (proposta). Clicar fora do card ou Esc tira a tira (proposta). |
 | **Clique duplo no papel** | Abre o editor LaTeX no mesmo ponto do texto (5.9). | |
-| **Aba < da nota espiando** | A nota abre **ao lado** do grafo, como um painel lateral com o papel. Ganha as abas **<** e **>**. | O grafo não escurece e continua usável ao lado. **<** de novo abre em **página dupla**; **>** volta um passo (página dupla → ao lado → espiando). É a sequência da D-14. |
+| **Aba < da nota espiando** | A nota abre **ao lado** do grafo, como um painel lateral com o papel. Ganha a aba **>**. | O grafo não escurece e continua usável ao lado. **>** volta para espiando. Não há página dupla (D-77). |
 | **Clicar noutro card com a nota aberta** | O papel troca para a nota do card novo, no mesmo tamanho (proposta). | |
 | **Seta no topo do card** (expandir) | Abre o painel vertical com tudo o que o card guarda: tarefas, bibliografia, vídeos e relacionados. | Fica por cima dos vizinhos; a disposição não muda. Clicar na seta de novo recolhe. |
 | **Botão maximizar** | Abre o grafo interno do card. | Só existe em card com pasta de mesmo nome (2.4). |
@@ -924,12 +930,12 @@ Regras que valem para todas as linhas:
 | **Apagar uma conexão** | Selecionar a seta e Delete (proposta). | Os estados são reavaliados. |
 | **Escrever uma referência na nota** | Cria o link automático (4.3). | Sugere notas e arquivos de todas as trilhas. Apagar a referência apaga o link. |
 | **Buscar no grafo** | Traz os resultados (arquivos da trilha, arquivos só pelo caminho, livros da biblioteca) para perto dos cards em foco. | Não muda nada até o usuário soltar o resultado. |
-| **Soltar um elemento num card** | Cria um link manual; o card de destino acende enquanto o elemento está em cima. | Guardado em `.secondbrain/cards/<id>`; não aparece no texto da nota. |
+| **Soltar um elemento num card** | Cria um link manual; o card de destino acende enquanto o elemento está em cima. | Guardado em `.secondbrain/cards/<id>.yaml`; não aparece no texto da nota. |
 | **Soltar um arquivo de fora num card** | Cria o link manual com o card na hora, sem perguntar nada (decidido em 07/11/2026). | O arquivo entra guardado só pelo caminho, na pasta onde o card está, e dá para movê-lo para a pasta depois (proposta). |
 | **Soltar um arquivo de fora no espaço** | Pergunta: **mover** para a pasta, ou **deixar onde está** e guardar só o caminho. | O arquivo entra na pasta da trilha, ou na do grafo interno aberto. Nos dois casos aparece como se estivesse na pasta (2.4). |
 | **Nota fantasma: Criar card** (botão tracejado) | Cria um card no grafo interno, com uma nota própria para aprofundar a divisão. | Se o card ainda não tem pasta, ela é criada e ele ganha grafo interno. A divisão continua na nota principal. |
 | **Nota fantasma: ×** | Recusa a sugestão. | A recusa fica no arquivo do card, para a fantasma não voltar; se a divisão mudar de nome, ela volta (proposta). |
-| **Clicar num EPUB** | Abre o leitor do jeito da nota: espia na borda direita, a aba **<** abre ao lado, e de novo em página dupla. | O texto reflui na largura do painel. Sumário para pular de capítulo; abre na última posição de leitura. Não tem clique duplo para editor (o EPUB não é uma nota). |
+| **Clicar num EPUB** | Abre o leitor do jeito da nota: espia na borda direita e a aba **<** abre ao lado. | O texto reflui na largura do painel. Sumário para pular de capítulo; abre na última posição de leitura. Não tem clique duplo para editor (o EPUB não é uma nota). |
 | **Elemento não encontrado** | O arquivo cujo caminho quebrou aparece como "não encontrado". | Nunca é apagado sozinho; o usuário pode apontar o caminho novo ou tirar o elemento (proposta). |
 
 ### 5.4 Compor documento
@@ -975,7 +981,7 @@ Regras que valem para todas as linhas:
 | **Clique duplo numa data** | Abre o editor do card na seção Datas (proposta). | |
 | **Evento importado do Google** | Aparece no dia como nota fantasma: translúcido, contorno tracejado, só com o título e a hora. | Seção 6. Aparece no calendário de todas as trilhas. Fica só no calendário: não entra no grafo até virar card. |
 | **Fantasma de evento: Criar card** | Cria um card com uma propriedade Data ligada ao evento e abre o editor de card novo. | O card vai para a trilha do calendário aberto. A Data guarda o id do evento, então as mudanças seguem a sincronização. |
-| **Fantasma de evento: ×** | Recusa o evento. | A recusa fica em `.secondbrain/calendario/eventos`; o evento não volta, mesmo se mudar no Google. |
+| **Fantasma de evento: ×** | Recusa o evento. | A recusa fica em `.secondbrain/calendar/events.yaml`; o evento não volta, mesmo se mudar no Google. |
 
 ### 5.8 Editor do card
 
@@ -991,14 +997,14 @@ Regras que valem para todas as linhas:
 | **Relacionados** | **Vincular nota, livro ou repositório.** | Vincular cria um link manual (2.2). |
 | **Adicionar propriedade** | Escolhe o tipo de propriedade e o nome. | Vale só para esse card. |
 | **Excluir card** | Manda tudo para a lixeira do sistema: a nota, a pasta do grafo interno (com o que tem dentro) e o arquivo do card em `.secondbrain/` (decidido em 07/11/2026). | Pede confirmação antes (proposta). Como vai para a lixeira, dá para recuperar por lá. As conexões e os links que apontavam para o card somem junto. |
-| **Pronto ou Esc** | Fecha o editor. | Cada mudança é gravada na hora em `.secondbrain/cards/<id>` (proposta). |
+| **Pronto ou Esc** | Fecha o editor. | Cada mudança é gravada na hora em `.secondbrain/cards/<id>.yaml` (proposta). |
 
 ### 5.9 Notas, LaTeX e bibliografia
 
 | Interação | O que acontece | Regra |
 |---|---|---|
 | **Digitar no `.tex`** | ~1 s depois de parar de digitar, grava e compila fora da thread do JavaFX; o visor fica no último PDF bom com "Compilando…". | Seção 4.1. |
-| **Clique duplo num ponto do PDF** | Abre o editor LaTeX já posicionado no trecho do `.tex` que gerou aquele ponto, com o cursor na linha. | Vale no PDF espiando, ao lado, em página dupla e no documento composto (aí abre a nota da parte certa). Usa o SyncTeX gerado na compilação. Sem SyncTeX (compilação antiga ou com erro), abre a nota no começo. |
+| **Clique duplo num ponto do PDF** | Abre o editor LaTeX já posicionado no trecho do `.tex` que gerou aquele ponto, com o cursor na linha. | Vale no PDF espiando, ao lado e no documento composto (aí abre a nota da parte certa). Usa o SyncTeX gerado na compilação. Sem SyncTeX (compilação antiga ou com erro), abre a nota no começo. |
 | **Digitar no `.md`** | O editor fica à esquerda e o papel à direita. A cada pausa, o Markdown vira HTML e o WebView mostra o papel atualizado, sem compilar nada. | Seção 4.5. Fórmulas `$…$` e `$$…$$` são desenhadas no HTML (proposta: KaTeX). Uma referência `[[…]]` vira link, como em 4.3. |
 | **Clique duplo no papel do `.md`** | Abre o editor do `.md` no bloco (parágrafo, título, item) que gerou aquele ponto. | Cada bloco do HTML guarda a linha do `.md` de onde veio. Funciona no papel do WebView. No PDF exportado, não (proposta). |
 | **Gerar o PDF de um `.md`** | O PDF sai do mesmo HTML do papel, com o mesmo visual. | Só quando precisa de um arquivo: exportar, imprimir ou entrar num documento composto. Na tela o `.md` sempre mostra o HTML. |
@@ -1014,6 +1020,7 @@ Regras que valem para todas as linhas:
 | **Estados e seleções** | Estados com nome, cor (RGB ou hex) e categoria; outras seleções com as suas opções. | As indicações automáticas olham a categoria. |
 | **LaTeX** | Tectonic embutido ou o TeX da máquina; compilação automática com espera ajustável. | |
 | **Visualização padrão** | Trilha nova abre em grafo, kanban, lista ou calendário; disposição, fundo, mostrar links, mostrar conexões e concluídos (normais, apagados, ocultos). | Cada trilha pode mudar depois. |
+| **Grafo** | Os ajustes do laboratório: espessura das setas, folgas da disposição por dependência, distância entre anéis da radial, as forças da simulação (repulsão, força e comprimento da mola, gravidade, atrito, atração da pasta) e as três trocas do zoom semântico. O resfriamento (0,08) e o raio magnético (200) são fixos. Prévia ao vivo e **Restaurar padrões**. | Valem para todas as trilhas (proposta). Valores e faixas em `grafo-e-conexoes.md`, "Ajustes do grafo". |
 | **Calendário** | Conectar a conta do Google, escolher quais calendários do Google são importados, e ligar ou desligar a sincronização. | Seção 6. Cada trilha exporta para um calendário do Google com o seu nome e cor. |
 | **Aparência** | Só o tema escuro por enquanto. | |
 | **Atalhos** | Todos editáveis: clicar numa tecla grava a combinação nova. | Conflitos aparecem marcados. |
