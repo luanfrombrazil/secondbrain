@@ -61,6 +61,8 @@ public final class GraphView extends Region {
     double levelTransition = 1;
     String selected;
     String hovered;
+    String connectingFrom;
+    String dropTarget;
     double mouseX;
     double mouseY;
 
@@ -154,6 +156,21 @@ public final class GraphView extends Region {
         visuals.put(id, new Visual(point));
         selected = id;
         recompute();
+    }
+
+    /**
+     * Connects two cards: the source becomes a prerequisite of the target. The camera follows
+     * the target, so the card the user just dropped on does not jump away.
+     */
+    public void connect(String source, String target) {
+        graph = graph.withConnection(source, target);
+        Visual visual = visuals.get(target);
+        double oldX = visual.targetX;
+        double oldY = visual.targetY;
+        recompute();
+        if (simulation == null) {
+            camera.panSmoothly((oldX - visual.targetX) * camera.scale(), (oldY - visual.targetY) * camera.scale());
+        }
     }
 
     public void recenter() {
@@ -310,6 +327,8 @@ public final class GraphView extends Region {
 
     private void frameTargets() {
         if (visuals.isEmpty()) {
+            camera.frame(-Node.WIDTH, -Node.HEIGHT, Node.WIDTH, Node.HEIGHT,
+                    getWidth() > 0 ? getWidth() : 1200, getHeight() > 0 ? getHeight() : 800);
             return;
         }
         Map<String, Point> targets = new HashMap<>();
@@ -334,18 +353,35 @@ public final class GraphView extends Region {
             pressX = lastX = e.getX();
             pressY = lastY = e.getY();
             dragged = false;
+            connectingFrom = e.getButton() == MouseButton.PRIMARY
+                    ? renderer.handleAt(this, camera, e.getX(), e.getY())
+                    : null;
+        } else if (e.getEventType() == MouseEvent.MOUSE_RELEASED) {
+            if (connectingFrom != null) {
+                if (dropTarget != null && graph.canConnect(connectingFrom, dropTarget)) {
+                    connect(connectingFrom, dropTarget);
+                }
+                connectingFrom = null;
+                dropTarget = null;
+                dirty = true;
+            }
         } else if (e.getEventType() == MouseEvent.MOUSE_DRAGGED) {
             if (Math.hypot(e.getX() - pressX, e.getY() - pressY) > MIN_DRAG) {
                 dragged = true;
             }
-            if (dragged) {
+            if (connectingFrom != null) {
+                String under = renderer.cardAt(this, camera, e.getX(), e.getY());
+                dropTarget = connectingFrom.equals(under) ? null : under;
+                dirty = true;
+            } else if (dragged) {
                 camera.drag(e.getX() - lastX, e.getY() - lastY);
                 dirty = true;
             }
             lastX = e.getX();
             lastY = e.getY();
         } else if (e.getEventType() == MouseEvent.MOUSE_MOVED) {
-            String now = renderer.cardAt(this, camera, e.getX(), e.getY());
+            String handle = renderer.handleAt(this, camera, e.getX(), e.getY());
+            String now = handle != null ? handle : renderer.cardAt(this, camera, e.getX(), e.getY());
             if (!java.util.Objects.equals(now, hovered)
                     || (now != null && level.compareTo(ZoomLevel.MEDIUM) < 0)) {
                 hovered = now;

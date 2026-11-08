@@ -59,6 +59,24 @@ class LayoutsTest {
     }
 
     @Test
+    void connectionThatClosesACycleIsRefused() {
+        Graph g = graph(List.of("a", "b", "c"), "a>b", "b>c");
+        assertFalse(g.canConnect("c", "a"));
+        assertFalse(g.canConnect("a", "a"));
+        assertFalse(g.canConnect("a", "b"));
+        assertTrue(g.canConnect("a", "c"));
+    }
+
+    @Test
+    void firstConnectionReleasesTheFixedPoint() {
+        Graph g = new Graph(List.of(new Node("a", null, new Point(5, 5)), new Node("b", null, new Point(9, 9)),
+                new Node("c", null, new Point(1, 1))), List.of(), List.of()).withConnection("a", "b");
+        assertEquals(null, g.node("a").fixed());
+        assertEquals(null, g.node("b").fixed());
+        assertEquals(new Point(1, 1), g.node("c").fixed());
+    }
+
+    @Test
     void cycleIsRejected() {
         assertThrows(IllegalArgumentException.class, () -> graph(List.of("a", "b", "c"), "a>b", "b>c", "c>a"));
     }

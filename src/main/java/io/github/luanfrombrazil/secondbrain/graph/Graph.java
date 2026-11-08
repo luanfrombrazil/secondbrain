@@ -4,9 +4,11 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The input of the layouts: nodes, connections (dependencies, acyclic) and links.
@@ -111,6 +113,41 @@ public final class Graph {
     /** The same graph with loose cards released from where they were created. */
     public Graph withoutFixedPoints() {
         return new Graph(nodes.values().stream().map(Node::withoutFixed).toList(), connections, links);
+    }
+
+    /** False for a card onto itself, a repeated connection, or one that would close a cycle. */
+    public boolean canConnect(String source, String target) {
+        return !source.equals(target)
+                && !dependencies.get(target).contains(source)
+                && !reaches(target, source);
+    }
+
+    private boolean reaches(String from, String to) {
+        Set<String> seen = new HashSet<>();
+        ArrayDeque<String> pending = new ArrayDeque<>(List.of(from));
+        while (!pending.isEmpty()) {
+            String id = pending.pop();
+            if (id.equals(to)) {
+                return true;
+            }
+            if (seen.add(id)) {
+                pending.addAll(dependents.get(id));
+            }
+        }
+        return false;
+    }
+
+    /** Adds a connection. Its two cards lose their fixed points and follow the layout from now on. */
+    public Graph withConnection(String source, String target) {
+        if (!canConnect(source, target)) {
+            throw new IllegalArgumentException("Invalid connection: " + source + " -> " + target);
+        }
+        List<Node> updated = nodes.values().stream()
+                .map(n -> n.id().equals(source) || n.id().equals(target) ? n.withoutFixed() : n)
+                .toList();
+        List<Edge> edges = new ArrayList<>(connections);
+        edges.add(new Edge(source, target));
+        return new Graph(updated, edges, links);
     }
 
     public Graph withNode(Node node) {

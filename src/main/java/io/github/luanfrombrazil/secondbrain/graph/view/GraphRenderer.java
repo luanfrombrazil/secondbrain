@@ -39,7 +39,9 @@ final class GraphRenderer {
     private static final double NOTE_WIDTH = 150;
     private static final double NOTE_HEIGHT = 40;
 
-    private final Map<Integer, Font> fonts = new HashMap<>();
+    private static final double HANDLE_HIT_RADIUS = 12;
+
+    private final Map<Integer, Font> fonts =new HashMap<>();
     private final Map<Integer, Font> boldFonts = new HashMap<>();
 
     int draw(GraphView t, GraphicsContext g, Camera c, double width, double height) {
@@ -76,8 +78,68 @@ final class GraphRenderer {
             drawCard(t, g, c, card, v, t.level);
             g.setGlobalAlpha(1);
         }
+        drawHandles(t, g, c);
+        drawConnectionInProgress(t, g, c);
         drawTooltip(t, g, c);
         return drawn;
+    }
+
+    /** The card whose connection handle is at the screen point, or null. */
+    String handleAt(GraphView t, Camera c, double screenX, double screenY) {
+        if (t.level.compareTo(ZoomLevel.FAR) < 0) {
+            return null;
+        }
+        for (CardData card : t.cards.values()) {
+            GraphView.Visual v = t.visuals.get(card.id());
+            if (v != null && Math.hypot(c.screenX(v.x + Node.WIDTH / 2) - screenX, c.screenY(v.y) - screenY) <= HANDLE_HIT_RADIUS) {
+                return card.id();
+            }
+        }
+        return null;
+    }
+
+    private void drawHandles(GraphView t, GraphicsContext g, Camera c) {
+        if (t.level.compareTo(ZoomLevel.FAR) < 0) {
+            return;
+        }
+        double radius = Math.max(5, 7 * c.scale());
+        for (String id : java.util.Arrays.asList(t.hovered, t.selected, t.connectingFrom)) {
+            GraphView.Visual v = id == null ? null : t.visuals.get(id);
+            if (v != null) {
+                double x = c.screenX(v.x + Node.WIDTH / 2);
+                double y = c.screenY(v.y);
+                g.setFill(COLOR_PROGRESS);
+                g.fillOval(x - radius, y - radius, 2 * radius, 2 * radius);
+                g.setStroke(COLOR_SPACE);
+                g.setLineWidth(1.5);
+                g.strokeOval(x - radius, y - radius, 2 * radius, 2 * radius);
+            }
+        }
+    }
+
+    private void drawConnectionInProgress(GraphView t, GraphicsContext g, Camera c) {
+        GraphView.Visual from = t.connectingFrom == null ? null : t.visuals.get(t.connectingFrom);
+        if (from == null) {
+            return;
+        }
+        boolean invalid = t.dropTarget != null && !t.graph.canConnect(t.connectingFrom, t.dropTarget);
+        Color color = invalid ? COLOR_BLOCKED : COLOR_HIGHLIGHT;
+        double x1 = c.screenX(from.x + Node.WIDTH / 2);
+        double y1 = c.screenY(from.y);
+        g.setStroke(color);
+        g.setFill(color);
+        g.setLineWidth(2);
+        g.strokeLine(x1, y1, t.mouseX, t.mouseY);
+        drawArrowhead(g, x1, y1, t.mouseX, t.mouseY, 12);
+
+        GraphView.Visual to = t.dropTarget == null ? null : t.visuals.get(t.dropTarget);
+        if (to != null) {
+            double w = Node.WIDTH * c.scale();
+            double h = Node.HEIGHT * c.scale();
+            double corner = Math.max(3, 16 * c.scale());
+            g.setLineWidth(2.5);
+            g.strokeRoundRect(c.screenX(to.x) - w / 2, c.screenY(to.y) - h / 2, w, h, corner, corner);
+        }
     }
 
     /** The card under the screen point, or null. */
@@ -275,8 +337,8 @@ final class GraphRenderer {
         }
     }
 
-    private static void drawArrowhead(GraphicsContext g, double deX, double deY, double x, double y, double size) {
-        double angle = Math.atan2(y - deY, x - deX);
+    private static void drawArrowhead(GraphicsContext g, double fromX, double fromY, double x, double y, double size) {
+        double angle = Math.atan2(y - fromY, x - fromX);
         double spread = 0.45;
         g.fillPolygon(
                 new double[]{x, x - size * Math.cos(angle - spread), x - size * Math.cos(angle + spread)},
