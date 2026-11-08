@@ -12,6 +12,7 @@ import java.util.Set;
 abstract class TreeLayout implements Layout {
 
     private static final int PER_STRIP_ROW = 8;
+    private static final double MAGNETIC_RADIUS = 200;
 
     protected abstract Map<String, Point> arrange(Graph graph, Forest forest, Parameters parameters);
 
@@ -27,7 +28,7 @@ abstract class TreeLayout implements Layout {
                 fixedIds.add(node.id());
             }
         }
-        return MagneticRepulsion.apply(positions, fixedIds, p.magneticRadius);
+        return MagneticRepulsion.apply(positions, fixedIds, MAGNETIC_RADIUS);
     }
 
     private void placeInStrip(Graph graph, Map<String, Point> positions, Parameters p) {

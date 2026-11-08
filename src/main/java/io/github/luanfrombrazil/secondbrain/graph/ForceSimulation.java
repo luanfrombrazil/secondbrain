@@ -15,6 +15,7 @@ import java.util.stream.IntStream;
 public final class ForceSimulation {
 
     private static final double THETA = 0.8;
+    private static final double COOLING = 0.08;
     private static final double MIN_ALPHA = 0.002;
     private static final double LINK_STRENGTH = 0.35;
     private static final double FIXED_MASS = 3;
@@ -93,7 +94,7 @@ public final class ForceSimulation {
             y[i] += vy[i];
         }
         separateTouching();
-        alpha *= 1 - p.cooling;
+        alpha *= 1 - COOLING;
         return true;
     }
 

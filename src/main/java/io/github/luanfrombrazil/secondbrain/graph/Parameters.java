@@ -18,11 +18,8 @@ public final class Parameters {
     public double springLength = 340;
     public double gravity = 0.015;
     public double friction = 0.6;
-    public double cooling = 0.02;
     public double folderForce = 0.03;
 
-    // Loose card
-    public double magneticRadius = 50;
 
     // Zoom thresholds between the five levels, from farthest to nearest
     public final double[] zoomThresholds = {0.14, 0.30, 0.55, 0.86};
@@ -37,12 +34,10 @@ public final class Parameters {
                 springLength = %.0f
                 gravity = %.3f
                 friction = %.2f
-                cooling = %.3f
                 folderForce = %.3f
-                magneticRadius = %.0f
                 zoomThresholds = %.2f, %.2f, %.2f, %.2f
                 """, columnGap, rowGap, ringStep, repulsion, springStrength, springLength,
-                gravity, friction, cooling, folderForce, magneticRadius,
+                gravity, friction, folderForce,
                 zoomThresholds[0], zoomThresholds[1], zoomThresholds[2], zoomThresholds[3]);
     }
 }

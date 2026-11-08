@@ -122,12 +122,8 @@ public final class GraphLab extends BorderPane {
         layoutSlider("Comprimento da mola", 100, 900, () -> parameters.springLength, v -> parameters.springLength = v);
         layoutSlider("Gravidade", 0, 0.12, () -> parameters.gravity, v -> parameters.gravity = v);
         layoutSlider("Atrito (velocidade mantida)", 0.2, 0.95, () -> parameters.friction, v -> parameters.friction = v);
-        layoutSlider("Resfriamento", 0.002, 0.08, () -> parameters.cooling, v -> parameters.cooling = v);
         layoutSlider("Atração da pasta", 0, 0.2, () -> parameters.folderForce, v -> parameters.folderForce = v);
 
-        title("Card solto (clique duplo no vazio)");
-        sliderOwners = EnumSet.of(LayoutType.DEPENDENCY, LayoutType.RADIAL);
-        layoutSlider("Raio magnético", 0, 240, () -> parameters.magneticRadius, v -> parameters.magneticRadius = v);
 
         title("Zoom semântico (escala de cada troca)");
         String[] names = {"Bolinha → miniatura", "Miniatura → afastado", "Afastado → médio", "Médio → próximo"};
