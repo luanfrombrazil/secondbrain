@@ -2,6 +2,7 @@ package io.github.luanfrombrazil.secondbrain.vault;
 
 import io.github.luanfrombrazil.secondbrain.card.Card;
 import io.github.luanfrombrazil.secondbrain.card.CardType;
+import io.github.luanfrombrazil.secondbrain.note.NoteDocument;
 import io.github.luanfrombrazil.secondbrain.property.ProgressProperty;
 import io.github.luanfrombrazil.secondbrain.property.Properties;
 import io.github.luanfrombrazil.secondbrain.property.Property;
@@ -177,7 +178,7 @@ public final class Vault implements AutoCloseable {
     }
 
     private static String noteTemplate(Track track, String title) {
-        return track.preamble() + "\n\\title{" + title + "}\n\\author{}\n\n\\begin{document}\n\\maketitle\n\n\n\\end{document}\n";
+        return NoteDocument.compose(track.preamble(), title, "");
     }
 
     /** Gives an empty note the track's starting text, so that it can compile. */

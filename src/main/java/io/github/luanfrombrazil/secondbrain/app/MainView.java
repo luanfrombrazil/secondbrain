@@ -130,7 +130,7 @@ final class MainView extends BorderPane implements GraphEditor {
         Track track = editor.track();
         TextArea text = new TextArea(track.preamble());
         Button save = new Button("Salvar");
-        Label hint = new Label("Vale para as notas novas desta trilha.");
+        Label hint = new Label("Vale para todas as notas da trilha, ao abrir cada uma.");
         hint.getStyleClass().add("label-text");
         Stage stage = new Stage();
         save.setOnAction(e -> attempt(() -> {
@@ -357,7 +357,8 @@ final class MainView extends BorderPane implements GraphEditor {
         attempt(() -> {
             closeNoteEditor();
             vault.fillIfEmpty(editor.track(), card);
-            noteEditor = new NoteEditorPane(vault.notePath(card), vault.cacheFolder(card), this::closeNoteEditor);
+            noteEditor = new NoteEditorPane(vault.notePath(card), vault.cacheFolder(card),
+                    editor.track().preamble(), card.title(), this::closeNoteEditor);
             noteEditor.setPrefWidth(getWidth() * 0.55);
             setRight(noteEditor);
             cardEditor = null;

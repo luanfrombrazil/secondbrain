@@ -36,6 +36,7 @@ public final class NotePaper extends BorderPane {
         toggle.setText(open ? ">" : "<");
         edit.setVisible(open);
         edit.setManaged(open);
+        pdf.setToolbarVisible(open);
         double width = open ? OPEN_WIDTH : PEEK_WIDTH;
         setMinWidth(width);
         setPrefWidth(width);

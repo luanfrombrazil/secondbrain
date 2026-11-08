@@ -34,6 +34,8 @@ public final class NoteEditorPane extends BorderPane {
 
     private final Path texFile;
     private final Path cacheFolder;
+    private final String preamble;
+    private final String title;
     private final Optional<TectonicCompiler> compiler;
     private final CodeArea code;
     private final PdfView pdf = new PdfView();
@@ -46,12 +48,14 @@ public final class NoteEditorPane extends BorderPane {
     private boolean compileAgain;
 
     /** @param cacheFolder where the compiled PDF goes; it only leaves the cache on export (D-53) */
-    public NoteEditorPane(Path texFile, Path cacheFolder, Runnable onClose) throws IOException {
+    public NoteEditorPane(Path texFile, Path cacheFolder, String preamble, String title, Runnable onClose) throws IOException {
         this.texFile = texFile;
+        this.preamble = preamble;
+        this.title = title;
         this.cacheFolder = cacheFolder;
         this.compiler = TectonicCompiler.find();
 
-        code = new CodeArea(Files.readString(texFile, StandardCharsets.UTF_8));
+        code = new CodeArea(NoteDocument.body(Files.readString(texFile, StandardCharsets.UTF_8)));
         codeScroll = new VirtualizedScrollPane<>(code);
         code.setParagraphGraphicFactory(LineNumberFactory.get(code));
         code.getStyleClass().add("tex-code");
@@ -85,7 +89,7 @@ public final class NoteEditorPane extends BorderPane {
         if (Files.exists(existing)) {
             pdf.show(existing);
         }
-        compile();
+        saveAndCompile();
     }
 
     private void setReading(boolean reading) {
@@ -100,7 +104,7 @@ public final class NoteEditorPane extends BorderPane {
     public void saveNow() {
         typingPause.stop();
         try {
-            String text = code.getText();
+            String text = NoteDocument.compose(preamble, title, code.getText());
             if (!text.equals(Files.readString(texFile, StandardCharsets.UTF_8))) {
                 Files.writeString(texFile, text, StandardCharsets.UTF_8);
             }
@@ -160,13 +164,16 @@ public final class NoteEditorPane extends BorderPane {
             status.setText("Erro na compilação.");
             return;
         }
+        int header = NoteDocument.headerLines(preamble, title);
         TectonicCompiler.Problem first = problems.getFirst();
-        status.setText(first.line() > 0
-                ? "Erro na linha " + first.line() + ": " + first.message()
-                : "Erro: " + first.message());
+        int firstLine = first.line() - header;
+        status.setText(firstLine > 0
+                ? "Erro na linha " + firstLine + ": " + first.message()
+                : first.line() > 0 ? "Erro no preâmbulo da trilha: " + first.message() : "Erro: " + first.message());
         for (TectonicCompiler.Problem problem : problems) {
-            if (problem.line() > 0 && problem.line() <= lineCount()) {
-                code.setParagraphStyle(problem.line() - 1, List.of(ERROR_LINE_STYLE));
+            int line = problem.line() - header;
+            if (line > 0 && line <= lineCount()) {
+                code.setParagraphStyle(line - 1, List.of(ERROR_LINE_STYLE));
             }
         }
     }
