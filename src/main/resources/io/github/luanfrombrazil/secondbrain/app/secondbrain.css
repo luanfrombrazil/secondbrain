@@ -1,0 +1,35 @@
+.root {
+    -fx-base: #24262b;
+    -fx-background: #17181c;
+    -fx-control-inner-background: #24262b;
+    -fx-accent: #5b8def;
+    -fx-focus-color: #5b8def;
+    -fx-faint-focus-color: transparent;
+    -fx-font-size: 12px;
+}
+
+.painel {
+    -fx-background-color: #1e2025;
+    -fx-border-color: #32353c;
+    -fx-border-width: 0 0 0 1;
+}
+
+.painel .scroll-pane,
+.painel .scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.titulo-do-grupo {
+    -fx-font-weight: bold;
+    -fx-text-fill: #e6e7ea;
+    -fx-padding: 10 0 2 0;
+}
+
+.rotulo {
+    -fx-text-fill: #a4a8b1;
+}
+
+.leitura {
+    -fx-text-fill: #e6e7ea;
+    -fx-font-family: "Consolas", monospace;
+}

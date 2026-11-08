@@ -28,17 +28,16 @@ Os pacotes seguem as partes do produto, com o modelo e a tela juntos, e não cam
 
 | Pacote | O que tem |
 |---|---|
-| `app` | Inicialização e janela (`SecondBrainApp`) e um grafo de exemplo (`Exemplo`) |
-| `trilha` | O grafo: `Trilha`, `Conexao`, `Link` e a tela `TrilhaView` |
-| `trilha.disposicao` | Os arranjos do grafo: `PorDependencia`, `PorForcas` (com `SimulacaoDeForcas`) e `Radial`, escolhidos no `MenuDeDisposicao` |
-| `trilha.fundo` | Os fundos do espaço: `Grade`, `Quadriculado`, `Pontilhado`, `Pautado` e `Liso`, escolhidos no `MenuDeFundo` |
-| `card` | `Card`, `CardView`, `Estado` e `TipoDeCard` |
-| `nota` | `Nota`, com `NotaMarkdown` e `NotaLatex` |
-| `propriedade` | `Propriedade`, `Propriedades` e as propriedades prontas: `tarefas`, `progresso` e `texto` |
+| `app` | Inicialização e janela (`SecondBrainApp`) |
+| `grafo` | As disposições, sem JavaFX: `Grafo`, `PorDependencia`, `Radial`, `PorForcas` (com `SimulacaoDeForcas`) e `Parametros` |
+| `grafo.tela` | A tela infinita: `TelaDoGrafo`, `DesenhoDoGrafo`, `Camera`, `NivelDeZoom` e `Fundo` |
+| `grafo.lab` | O laboratório para ajustar a física (`LaboratorioDoGrafo`) |
+
+Os próximos pacotes nascem com as fases de [implementacao.md](implementacao.md).
 
 ## Dependências
 
-Hoje a única dependência é o `javafx-controls`. Os arranjos do grafo, inclusive a simulação de forças, são implementados no próprio projeto.
+O app usa só o `javafx-controls`, e os testes usam o JUnit. As disposições, inclusive a simulação de forças, são implementadas no próprio projeto.
 
 ## O que ainda não tem biblioteca
 
