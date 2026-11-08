@@ -57,7 +57,6 @@ public final class GraphView extends Region {
     Backdrop backdrop = Backdrop.GRID;
     boolean showConnections = true;
     boolean showLinks = true;
-    boolean groupByFolder = true;
     ZoomLevel level = ZoomLevel.MEDIUM;
     ZoomLevel previousLevel = ZoomLevel.MEDIUM;
     double levelTransition = 1;
@@ -215,11 +214,6 @@ public final class GraphView extends Region {
 
     public void setShowLinks(boolean value) {
         showLinks = value;
-        dirty = true;
-    }
-
-    public void setGroupByFolder(boolean value) {
-        groupByFolder = value;
         dirty = true;
     }
 
@@ -512,17 +506,6 @@ public final class GraphView extends Region {
             }
             dirty = true;
         }
-    }
-
-    /** The ids grouped by each folder. */
-    Map<String, List<String>> folders() {
-        Map<String, List<String>> output = new LinkedHashMap<>();
-        for (Node node : graph.nodes()) {
-            if (node.folder() != null) {
-                output.computeIfAbsent(node.folder(), k -> new ArrayList<>()).add(node.id());
-            }
-        }
-        return output;
     }
 
     List<Edge> connections() {

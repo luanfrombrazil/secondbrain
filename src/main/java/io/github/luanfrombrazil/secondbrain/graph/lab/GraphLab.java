@@ -104,7 +104,6 @@ public final class GraphLab extends BorderPane {
 
         checkBox("Conexões", view::setShowConnections);
         checkBox("Links (só de perto)", view::setShowLinks);
-        checkBox("Agrupar por pasta", view::setGroupByFolder);
 
         title("Por dependência");
         sliderOwners = EnumSet.of(LayoutType.DEPENDENCY);

@@ -97,8 +97,7 @@ public final class DependencyLayout extends TreeLayout {
     /** Moves each card toward the mean height of its prerequisites, so fewer arrows cross. */
     private void reorder(Graph graph, Forest f, Map<String, Double> ys) {
         Comparator<String> order = Comparator
-                .comparing((String id) -> graph.node(id).folder(), Forest.FOLDERLESS_LAST)
-                .thenComparingDouble(id -> graph.dependenciesOf(id).stream()
+                .comparingDouble((String id) -> graph.dependenciesOf(id).stream()
                         .mapToDouble(ys::get).average().orElse(ys.get(id)))
                 .thenComparing(Comparator.naturalOrder());
         f.roots.sort(order);

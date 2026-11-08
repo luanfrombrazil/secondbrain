@@ -5,12 +5,10 @@ import io.github.luanfrombrazil.secondbrain.graph.Node;
 import javafx.geometry.VPos;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.StrokeLineJoin;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +22,6 @@ final class GraphRenderer {
     static final Color COLOR_DONE = Color.web("#47b26b");
 
     private static final Color COLOR_SPACE = Color.web("#17181c");
-    private static final Color COLOR_FOLDER = Color.web("#20232b");
     private static final Color COLOR_CARD = Color.web("#2a2c33");
     private static final Color COLOR_BORDER = Color.web("#3c3f48");
     private static final Color COLOR_SELECTION = Color.web("#f0f1f4");
@@ -72,9 +69,6 @@ final class GraphRenderer {
         g.setGlobalAlpha(1);
         g.setFill(COLOR_SPACE);
         g.fillRect(0, 0, width, height);
-        if (t.groupByFolder) {
-            drawFolders(t, g, c);
-        }
         t.backdrop.draw(g, c, width, height);
 
         if (t.showConnections) {
@@ -257,78 +251,6 @@ final class GraphRenderer {
         double x = c.screenX(v.x);
         double y = c.screenY(v.y);
         return x < -gap || y < -gap || x > width + gap || y > height + gap;
-    }
-
-    // Folders: convex hull with rounded corners, solid color behind the grid.
-
-    private void drawFolders(GraphView t, GraphicsContext g, Camera c) {
-        double rounding = 70 * c.scale();
-        List<Runnable> names = new ArrayList<>();
-        for (var folder : t.folders().entrySet()) {
-            List<double[]> points = new ArrayList<>();
-            for (String id : folder.getValue()) {
-                GraphView.Visual v = t.visuals.get(id);
-                if (v == null) {
-                    continue;
-                }
-                for (int sx = -1; sx <= 1; sx += 2) {
-                    for (int sy = -1; sy <= 1; sy += 2) {
-                        points.add(new double[]{
-                                c.screenX(v.x + sx * Node.WIDTH / 2),
-                                c.screenY(v.y + sy * Node.HEIGHT / 2)});
-                    }
-                }
-            }
-            if (points.size() < 4) {
-                continue;
-            }
-            List<double[]> hull = convexHull(points);
-            double[] xs = hull.stream().mapToDouble(p -> p[0]).toArray();
-            double[] ys = hull.stream().mapToDouble(p -> p[1]).toArray();
-            g.setFill(COLOR_FOLDER);
-            g.setStroke(COLOR_FOLDER);
-            g.setLineWidth(rounding);
-            g.setLineJoin(StrokeLineJoin.ROUND);
-            g.fillPolygon(xs, ys, xs.length);
-            g.strokePolygon(xs, ys, xs.length);
-            if (t.level.compareTo(ZoomLevel.VERY_FAR) >= 0) {
-                double top = hull.stream().mapToDouble(p -> p[1]).min().orElse(0);
-                double left = hull.stream().filter(p -> p[1] < top + 2)
-                        .mapToDouble(p -> p[0]).min().orElse(0);
-                String name = folder.getKey();
-                names.add(() -> g.fillText(name, left, top - rounding / 2 - 2));
-            }
-        }
-        g.setLineJoin(StrokeLineJoin.MITER);
-        // After all areas, so one folder does not cover the name of another.
-        g.setFill(COLOR_TEXT_DIM);
-        g.setFont(fontFor(Math.clamp(26 * c.scale(), 11, 22), false));
-        g.setTextBaseline(VPos.BOTTOM);
-        names.forEach(Runnable::run);
-    }
-
-    /** Andrew's monotone chain. */
-    private static List<double[]> convexHull(List<double[]> points) {
-        List<double[]> sorted = new ArrayList<>(points);
-        sorted.sort(Comparator.<double[]>comparingDouble(p -> p[0]).thenComparingDouble(p -> p[1]));
-        List<double[]> hull = new ArrayList<>();
-        for (int pass = 0; pass < 2; pass++) {
-            int start = hull.size();
-            for (double[] p : sorted) {
-                while (hull.size() >= start + 2
-                        && cross(hull.get(hull.size() - 2), hull.getLast(), p) <= 0) {
-                    hull.removeLast();
-                }
-                hull.add(p);
-            }
-            hull.removeLast();
-            java.util.Collections.reverse(sorted);
-        }
-        return hull;
-    }
-
-    private static double cross(double[] o, double[] a, double[] b) {
-        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
     }
 
     // Arrows: straight in the radial and force layouts. In the dependency layout, curved when the

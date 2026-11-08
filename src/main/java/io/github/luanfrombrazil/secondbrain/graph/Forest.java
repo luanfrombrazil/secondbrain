@@ -12,17 +12,12 @@ import java.util.Map;
  */
 final class Forest {
 
-    static final Comparator<String> FOLDERLESS_LAST =
-            Comparator.nullsLast(Comparator.naturalOrder());
-
     final List<String> roots = new ArrayList<>();
     final Map<String, List<String>> children = new HashMap<>();
     private final Map<String, Integer> leaves = new HashMap<>();
 
     Forest(Graph graph) {
-        Comparator<String> order = Comparator
-                .comparing((String id) -> graph.node(id).folder(), FOLDERLESS_LAST)
-                .thenComparing(Comparator.naturalOrder());
+        Comparator<String> order = Comparator.naturalOrder();
         for (Node node : graph.nodes()) {
             if (graph.loose(node.id())) {
                 continue;
