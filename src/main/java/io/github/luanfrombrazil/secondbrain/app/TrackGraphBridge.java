@@ -59,7 +59,7 @@ final class TrackGraphBridge {
         int done = card.property(TasksProperty.class).map(TasksProperty::doneCount).orElse(0);
         return new CardData(card.id(), card.title(), color(track, card), progress(track, card, tasks.size(), done),
                 Math.min(1, (card.properties().size() + card.dependencies().size()) / FULL_WEIGHT),
-                tasks, done, !card.innerCards().isEmpty());
+                tasks, done, !card.innerCards().isEmpty(), card.property(ProgressProperty.class).isPresent());
     }
 
     private static Color color(Track track, Card card) {

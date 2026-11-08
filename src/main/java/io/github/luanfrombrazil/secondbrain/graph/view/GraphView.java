@@ -189,7 +189,7 @@ public final class GraphView extends Region {
         Point point = new Point(worldX, worldY);
         graph = graph.withNode(new Node(id, null, point));
         cards.put(id, new CardData(id, "Card solto " + looseCount, GraphRenderer.COLOR_AVAILABLE,
-                0, 0.4, List.of(), 0, false));
+                0, 0.4, List.of(), 0, false, true));
         visuals.put(id, new Visual(point));
         selected = id;
         recompute();

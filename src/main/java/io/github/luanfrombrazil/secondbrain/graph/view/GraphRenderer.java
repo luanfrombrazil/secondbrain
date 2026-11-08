@@ -525,7 +525,9 @@ public final class GraphRenderer {
         double margin = 14 * e;
         double usableWidth = w - 2 * margin;
         double barY = y + h - 14 * e;
-        drawBar(g, x + margin, barY, usableWidth, Math.max(2, 5 * e), card.progress());
+        if (card.showsProgress()) {
+            drawBar(g, x + margin, barY, usableWidth, Math.max(2, 5 * e), card.progress());
+        }
 
         switch (renderLevel) {
             case MEDIUM -> text(g, card.title(), x + margin, y + 42 * e, usableWidth,

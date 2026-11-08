@@ -122,7 +122,7 @@ public final class Samples {
         }
         List<String> tasks = List.of("Lista 1", "Lista 2", "Revisão");
         int done = (int) Math.round(progress * tasks.size());
-        return new CardData(id, title, color, progress, 0.2 + random.nextDouble() * 0.8, tasks, done, random.nextInt(4) == 0);
+        return new CardData(id, title, color, progress, 0.2 + random.nextDouble() * 0.8, tasks, done, random.nextInt(4) == 0, true);
     }
 
     private static String roman(int n) {

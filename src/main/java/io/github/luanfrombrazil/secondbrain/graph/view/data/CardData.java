@@ -10,5 +10,5 @@ import java.util.List;
  * @param weight from 0 to 1; sets the size of the dot
  */
 public record CardData(String id, String title, Color stateColor, double progress, double weight,
-                     List<String> tasks, int tasksDone, boolean hasInnerGraph) {
+                     List<String> tasks, int tasksDone, boolean hasInnerGraph, boolean showsProgress) {
 }
