@@ -40,15 +40,21 @@ final class GraphRenderer {
     private static final double NOTE_HEIGHT = 40;
 
     private static final double HANDLE_HIT_RADIUS = 12;
-    /** Curves in this central part of the view (0 to 1) are drawn smooth, up to the budget per frame. */
-    private static final double SMOOTH_CURVE_ZONE = 0.55;
-    private static final int SMOOTH_CURVE_BUDGET = 80;
+    // With few cards on screen every curve is smooth; quality drops gradually as the count grows.
+    private static final int CARDS_AT_FULL_QUALITY = 100;
+    private static final int CARDS_AT_LOWEST_QUALITY = 1000;
+    private static final double FULL_QUALITY_ZONE = 1.5;
+    private static final double LOWEST_QUALITY_ZONE = 0.55;
+    private static final int FULL_QUALITY_BUDGET = 1000;
+    private static final int LOWEST_QUALITY_BUDGET = 80;
     private static final int MAX_LINE_SEGMENTS = 16;
-    private static final int MIN_LINE_SEGMENTS = 4;
+    private static final int LOWEST_QUALITY_SEGMENTS = 4;
 
     private double viewWidth;
     private double viewHeight;
     private int smoothCurvesLeft;
+    private double smoothZone;
+    private double minLineSegments;
 
     private final Map<Integer, Font> fonts =new HashMap<>();
     private final Map<Integer, Font> boldFonts = new HashMap<>();
@@ -56,7 +62,11 @@ final class GraphRenderer {
     int draw(GraphView t, GraphicsContext g, Camera c, double width, double height) {
         viewWidth = width;
         viewHeight = height;
-        smoothCurvesLeft = SMOOTH_CURVE_BUDGET;
+        double economy = Math.clamp((t.drawn() - CARDS_AT_FULL_QUALITY)
+                / (double) (CARDS_AT_LOWEST_QUALITY - CARDS_AT_FULL_QUALITY), 0, 1);
+        smoothCurvesLeft = (int) (FULL_QUALITY_BUDGET + (LOWEST_QUALITY_BUDGET - FULL_QUALITY_BUDGET) * economy);
+        smoothZone = FULL_QUALITY_ZONE + (LOWEST_QUALITY_ZONE - FULL_QUALITY_ZONE) * economy;
+        minLineSegments = MAX_LINE_SEGMENTS + (LOWEST_QUALITY_SEGMENTS - MAX_LINE_SEGMENTS) * economy;
         g.setGlobalAlpha(1);
         g.setFill(COLOR_SPACE);
         g.fillRect(0, 0, width, height);
@@ -421,10 +431,10 @@ final class GraphRenderer {
             double fromCenter = Math.hypot((x1 + x2) / 2 - viewWidth / 2, (y1 + y2) / 2 - viewHeight / 2)
                     / (Math.hypot(viewWidth, viewHeight) / 2);
             boolean smooth = t.level.compareTo(ZoomLevel.MEDIUM) >= 0
-                    || (fromCenter < SMOOTH_CURVE_ZONE && smoothCurvesLeft > 0);
+                    || (fromCenter < smoothZone && smoothCurvesLeft > 0);
             if (!smooth) {
                 int segments = (int) Math.round(MAX_LINE_SEGMENTS
-                        - (MAX_LINE_SEGMENTS - MIN_LINE_SEGMENTS) * Math.min(1, fromCenter));
+                        - (MAX_LINE_SEGMENTS - minLineSegments) * Math.min(1, fromCenter));
                 strokeCurveAsLines(g, x1, y1, x1 + gap, y1, c2x, c2y, x2, y2, segments);
             } else {
                 smoothCurvesLeft--;
