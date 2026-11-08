@@ -552,14 +552,11 @@ final class GraphRenderer {
                 g.setFill(COLOR_SHADOW);
                 g.fillRoundRect(x - 2, y - 2, w + 4, h + 4, corner + 3, corner + 3);
             }
-            g.setFill(COLOR_CARD);
-            g.fillRoundRect(x, y, w, h, corner, corner);
-
-            // The state stripe follows the curve of the top corners.
+            // The stripe wraps down the top corners: the body is a rounded card laid over a colored one.
             g.setFill(card.stateColor());
-            g.fillRoundRect(x, y, w, strip + corner, corner, corner);
+            g.fillRoundRect(x, y, w, strip + 2 * corner, corner, corner);
             g.setFill(COLOR_CARD);
-            g.fillRect(x, y + strip, w, corner + 2); // 2 px past the stripe shape, to cover its antialiased edge
+            g.fillRoundRect(x, y + strip, w, h - strip, corner, corner);
 
             if (selected || renderLevel != ZoomLevel.FAR) {
                 g.setStroke(selected ? COLOR_SELECTION : COLOR_BORDER);
