@@ -31,6 +31,8 @@ Os pacotes seguem as partes do produto, com o modelo e a tela juntos, e não cam
 | Pacote | O que tem |
 |---|---|
 | `app` | Inicialização e janela (`SecondBrainApp`) |
+| `track`, `card`, `property` | O modelo: trilhas e regras de estado, cards e propriedades |
+| `vault` | O acervo no disco: `Vault`, `Slug` e os arquivos YAML |
 | `graph` | O grafo, sem JavaFX: `Graph`, `Node`, `Edge` e `Point` |
 | `graph.layout` | O contrato das disposições: `Layout`, `AnimatedLayout`, `LayoutRun`, `Tunable` e a lista `Layouts` |
 | `graph.layout.dependency`, `.radial`, `.force` | Uma disposição em cada pacote, com os próprios parâmetros. Uma não importa a outra |
@@ -45,7 +47,7 @@ Os próximos pacotes nascem com as fases de [implementacao.md](implementacao.md)
 
 ## Dependências
 
-O app usa só o `javafx-controls`, e os testes usam o JUnit. As disposições, inclusive a simulação de forças, são implementadas no próprio projeto.
+O app usa o `javafx-controls` e o SnakeYAML Engine (arquivos de `.secondbrain/`), e os testes usam o JUnit. As disposições, inclusive a simulação de forças, são implementadas no próprio projeto.
 
 ## O que ainda não tem biblioteca
 
