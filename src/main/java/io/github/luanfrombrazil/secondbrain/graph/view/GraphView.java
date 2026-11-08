@@ -353,9 +353,11 @@ public final class GraphView extends Region {
             pressX = lastX = e.getX();
             pressY = lastY = e.getY();
             dragged = false;
-            connectingFrom = e.getButton() == MouseButton.PRIMARY
-                    ? renderer.handleAt(this, camera, e.getX(), e.getY())
-                    : null;
+            connectingFrom = switch (e.getButton()) {
+                case PRIMARY -> renderer.handleAt(this, camera, e.getX(), e.getY());
+                case SECONDARY -> renderer.cardAt(this, camera, e.getX(), e.getY());
+                default -> null;
+            };
         } else if (e.getEventType() == MouseEvent.MOUSE_RELEASED) {
             if (connectingFrom != null) {
                 if (dropTarget != null && graph.canConnect(connectingFrom, dropTarget)) {

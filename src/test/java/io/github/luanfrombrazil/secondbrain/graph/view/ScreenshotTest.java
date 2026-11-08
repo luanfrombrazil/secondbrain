@@ -86,11 +86,28 @@ class ScreenshotTest {
         if (view.graph.connections().size() != 1 || view.graph.node("loose-1").fixed() != null) {
             failure = new AssertionError("Dragging from the handle did not connect: " + view.graph.connections());
         }
+
+        view.createLooseCard(0, 600);
+        view.settle();
+        double startX = c.screenX(0);
+        double startY = c.screenY(600);
+        double endX = c.screenX(view.visuals.get("loose-1").x);
+        double endY = c.screenY(view.visuals.get("loose-1").y);
+        fire(view, MouseEvent.MOUSE_PRESSED, startX, startY, MouseButton.SECONDARY);
+        fire(view, MouseEvent.MOUSE_DRAGGED, endX, endY, MouseButton.SECONDARY);
+        fire(view, MouseEvent.MOUSE_RELEASED, endX, endY, MouseButton.SECONDARY);
+        if (!view.graph.dependenciesOf("loose-1").equals(java.util.List.of("loose-3"))) {
+            failure = new AssertionError("Right drag did not connect: " + view.graph.connections());
+        }
     }
 
     private void fire(GraphView view, EventType<MouseEvent> type, double x, double y) {
-        Event.fireEvent(view.canvas(), new MouseEvent(type, x, y, x, y, MouseButton.PRIMARY, 1,
-                false, false, false, false, true, false, false, false, false, false, null));
+        fire(view, type, x, y, MouseButton.PRIMARY);
+    }
+
+    private void fire(GraphView view, EventType<MouseEvent> type, double x, double y, MouseButton button) {
+        Event.fireEvent(view.canvas(), new MouseEvent(type, x, y, x, y, button, 1, false, false, false, false,
+                button == MouseButton.PRIMARY, false, button == MouseButton.SECONDARY, false, false, false, null));
     }
 
     private void capture(Path folder, LayoutType type, int size, Double zoom, String name) throws IOException {
