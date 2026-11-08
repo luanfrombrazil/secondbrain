@@ -25,6 +25,7 @@ public final class DependencyLayout implements Layout {
     private double rowGap = 40;
 
     private static final int ORDERING_PASSES = 3;
+    private static final double LINE_CLEARANCE = 20;
 
     @Override
     public String name() {
@@ -61,11 +62,36 @@ public final class DependencyLayout implements Layout {
             reorder(graph, f, ys);
         }
 
+        clearSkippingConnections(graph, f, ys);
         centerMergesAndSeparate(graph, f, stepY, ys);
 
         Map<String, Point> positions = new HashMap<>();
         ys.forEach((id, y) -> positions.put(id, new Point(graph.layer(id) * stepX, y)));
         return positions;
+    }
+
+    /**
+     * A connection that skips columns must not pass behind the cards in between: a card
+     * in its way steps aside, taking along the cards that hang from it.
+     */
+    private void clearSkippingConnections(Graph graph, Forest f, Map<String, Double> ys) {
+        TreeMap<Integer, List<String>> columns = new TreeMap<>();
+        ys.keySet().stream().sorted().forEach(id ->
+                columns.computeIfAbsent(graph.layer(id), k -> new ArrayList<>()).add(id));
+        for (Edge edge : graph.connections()) {
+            int from = graph.layer(edge.source());
+            int to = graph.layer(edge.target());
+            for (int layer = from + 1; layer < to; layer++) {
+                double progress = (double) (layer - from) / (to - from);
+                for (String id : columns.getOrDefault(layer, List.of())) {
+                    double lineY = ys.get(edge.source()) + (ys.get(edge.target()) - ys.get(edge.source())) * progress;
+                    double distance = ys.get(id) - lineY;
+                    if (Math.abs(distance) < Node.HEIGHT / 2 + LINE_CLEARANCE) {
+                        shift(id, (distance >= 0 ? 1 : -1) * Node.HEIGHT - distance, f, ys);
+                    }
+                }
+            }
+        }
     }
 
     /**

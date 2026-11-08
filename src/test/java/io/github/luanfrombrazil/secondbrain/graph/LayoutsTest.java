@@ -76,6 +76,16 @@ class LayoutsTest {
     }
 
     @Test
+    void aCardInTheWayOfASkippingConnectionStepsAside() {
+        Map<String, Point> pos = new DependencyLayout().compute(graph(List.of("a", "b", "c"), "a>b", "b>c", "a>c"));
+        assertTrue(pos.get("b").y() != pos.get("a").y());
+        assertEquals((pos.get("a").y() + pos.get("b").y()) / 2, pos.get("c").y(), 1e-9);
+        double lineAtB = pos.get("a").y() + (pos.get("c").y() - pos.get("a").y()) * 0.5;
+        assertTrue(Math.abs(pos.get("b").y() - lineAtB) > Node.HEIGHT / 2);
+        assertNoOverlap(pos);
+    }
+
+    @Test
     void childWithTwoParentsSitsBetweenThem() {
         Map<String, Point> pos = new DependencyLayout().compute(graph(List.of("a", "b", "c", "d"), "a>c", "b>c", "c>d"));
         assertEquals((pos.get("a").y() + pos.get("b").y()) / 2, pos.get("c").y(), 1e-9);
