@@ -58,7 +58,7 @@ final class GraphRenderer {
         }
         if (t.level == ZoomLevel.NEAR) {
             if (t.showLinks) {
-                drawLinks(t, g, c);
+                drawLinks(t, g, c, width, height);
             }
         }
 
@@ -436,7 +436,8 @@ final class GraphRenderer {
         }
     }
 
-    private void drawLinks(GraphView t, GraphicsContext g, Camera c) {
+    /** Only links with both ends on screen: the ones leading off screen would just cross the view. */
+    private void drawLinks(GraphView t, GraphicsContext g, Camera c, double width, double height) {
         g.setStroke(COLOR_LINK);
         g.setLineWidth(1.4);
         g.setLineDashes(6, 6);
@@ -444,7 +445,8 @@ final class GraphRenderer {
             GraphView.Visual o = t.visuals.get(a.source());
             GraphView.Visual d = t.visuals.get(a.target());
             boolean drawnAsChip = a.source().equals(t.focus) || a.target().equals(t.focus);
-            if (o != null && d != null && !drawnAsChip) {
+            if (o != null && d != null && !drawnAsChip
+                    && !offScreen(c, o, width, height) && !offScreen(c, d, width, height)) {
                 g.strokeLine(c.screenX(o.x), c.screenY(o.y), c.screenX(d.x), c.screenY(d.y));
             }
         }
