@@ -40,11 +40,23 @@ final class GraphRenderer {
     private static final double NOTE_HEIGHT = 40;
 
     private static final double HANDLE_HIT_RADIUS = 12;
+    /** Curves in this central part of the view (0 to 1) are drawn smooth, up to the budget per frame. */
+    private static final double SMOOTH_CURVE_ZONE = 0.55;
+    private static final int SMOOTH_CURVE_BUDGET = 80;
+    private static final int MAX_LINE_SEGMENTS = 16;
+    private static final int MIN_LINE_SEGMENTS = 4;
+
+    private double viewWidth;
+    private double viewHeight;
+    private int smoothCurvesLeft;
 
     private final Map<Integer, Font> fonts =new HashMap<>();
     private final Map<Integer, Font> boldFonts = new HashMap<>();
 
     int draw(GraphView t, GraphicsContext g, Camera c, double width, double height) {
+        viewWidth = width;
+        viewHeight = height;
+        smoothCurvesLeft = SMOOTH_CURVE_BUDGET;
         g.setGlobalAlpha(1);
         g.setFill(COLOR_SPACE);
         g.fillRect(0, 0, width, height);
@@ -406,9 +418,16 @@ final class GraphRenderer {
             double gap = Math.max(30 * c.scale(), (x2 - x1) / 2);
             c2x = x2 - gap;
             c2y = y2;
-            if (t.level.compareTo(ZoomLevel.MEDIUM) < 0) {
-                strokeCurveAsLines(g, x1, y1, x1 + gap, y1, c2x, c2y, x2, y2);
+            double fromCenter = Math.hypot((x1 + x2) / 2 - viewWidth / 2, (y1 + y2) / 2 - viewHeight / 2)
+                    / (Math.hypot(viewWidth, viewHeight) / 2);
+            boolean smooth = t.level.compareTo(ZoomLevel.MEDIUM) >= 0
+                    || (fromCenter < SMOOTH_CURVE_ZONE && smoothCurvesLeft > 0);
+            if (!smooth) {
+                int segments = (int) Math.round(MAX_LINE_SEGMENTS
+                        - (MAX_LINE_SEGMENTS - MIN_LINE_SEGMENTS) * Math.min(1, fromCenter));
+                strokeCurveAsLines(g, x1, y1, x1 + gap, y1, c2x, c2y, x2, y2, segments);
             } else {
+                smoothCurvesLeft--;
                 g.beginPath();
                 g.moveTo(x1, y1);
                 g.bezierCurveTo(x1 + gap, y1, c2x, c2y, x2, y2);
@@ -444,8 +463,7 @@ final class GraphRenderer {
 
     /** Separate short lines are much faster than one stroked curve; from afar they look the same. */
     private static void strokeCurveAsLines(GraphicsContext g, double x0, double y0, double x1, double y1,
-                                           double x2, double y2, double x3, double y3) {
-        int segments = 8;
+                                           double x2, double y2, double x3, double y3, int segments) {
         double previousX = x0;
         double previousY = y0;
         for (int i = 1; i <= segments; i++) {
