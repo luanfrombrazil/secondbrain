@@ -524,11 +524,6 @@ final class GraphRenderer {
         drawBar(g, x + margin, barY, usableWidth, Math.max(2, 5 * e), card.progress());
 
         switch (renderLevel) {
-            case FAR -> {
-                g.setFill(COLOR_TEXT_DIM);
-                g.fillRect(x + margin, y + 26 * e, usableWidth * 0.75, 9 * e);
-                g.fillRect(x + margin, y + 44 * e, usableWidth * 0.5, 7 * e);
-            }
             case MEDIUM -> text(g, card.title(), x + margin, y + 42 * e, usableWidth,
                     21 * e, true, COLOR_TEXT, VPos.CENTER);
             case NEAR -> drawFullCard(g, card, x, y, w, margin, e);
