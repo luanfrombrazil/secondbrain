@@ -26,12 +26,14 @@ mvn javafx:run
 
 Os pacotes seguem as partes do produto, com o modelo e a tela juntos, e não camadas técnicas.
 
+**O código é todo em inglês** (pacotes, classes, variáveis e comentários), por exemplo `CardType` para tipo de card. O texto que o usuário vê continua em português.
+
 | Pacote | O que tem |
 |---|---|
 | `app` | Inicialização e janela (`SecondBrainApp`) |
-| `grafo` | As disposições, sem JavaFX: `Grafo`, `PorDependencia`, `Radial`, `PorForcas` (com `SimulacaoDeForcas`) e `Parametros` |
-| `grafo.tela` | A tela infinita: `TelaDoGrafo`, `DesenhoDoGrafo`, `Camera`, `NivelDeZoom` e `Fundo` |
-| `grafo.lab` | O laboratório para ajustar a física (`LaboratorioDoGrafo`) |
+| `graph` | As disposições, sem JavaFX: `Graph`, `DependencyLayout`, `RadialLayout`, `ForceLayout` (com `ForceSimulation`) e `Parameters` |
+| `graph.view` | A tela infinita: `GraphView`, `GraphRenderer`, `Camera`, `ZoomLevel` e `Backdrop` |
+| `graph.lab` | O laboratório para ajustar a física (`GraphLab`) |
 
 Os próximos pacotes nascem com as fases de [implementacao.md](implementacao.md).
 

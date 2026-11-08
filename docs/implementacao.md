@@ -24,8 +24,8 @@ mvn javafx:run
 
 No laboratório: arrastar move a tela, a roda do mouse dá zoom, clique duplo no vazio cria um card solto. **Copiar valores** copia os parâmetros atuais, que viram os padrões depois de aprovados.
 
-Para gerar imagens da tela em `target/capturas/`:
+Para gerar imagens da tela em `target/captures/`:
 
 ```
-mvn test -Dcaptura=true -Dtest=CapturaDeTelaTest
+mvn test -Dcapture=true -Dtest=ScreenshotTest
 ```
