@@ -4,6 +4,7 @@ import io.github.luanfrombrazil.secondbrain.graph.layout.Layout;
 import io.github.luanfrombrazil.secondbrain.graph.layout.Layouts;
 import io.github.luanfrombrazil.secondbrain.graph.layout.Tunable;
 import io.github.luanfrombrazil.secondbrain.graph.view.backdrop.Backdrop;
+import io.github.luanfrombrazil.secondbrain.graph.view.backdrop.Backdrops;
 import io.github.luanfrombrazil.secondbrain.graph.view.ViewParameters;
 import io.github.luanfrombrazil.secondbrain.graph.view.GraphView;
 import javafx.animation.KeyFrame;
@@ -69,22 +70,13 @@ public final class GraphLab extends BorderPane {
         layout.getItems().addAll(layouts);
         layout.setValue(layouts.getFirst());
         layout.setMaxWidth(Double.MAX_VALUE);
-        layout.setConverter(new StringConverter<>() {
-            @Override
-            public String toString(Layout each) {
-                return each == null ? "" : each.name();
-            }
-
-            @Override
-            public Layout fromString(String text) {
-                return null;
-            }
-        });
+        layout.setConverter(named(Layout::name));
         layout.setOnAction(e -> view.reorganize(layout.getValue()));
 
         ComboBox<Backdrop> backdrop = new ComboBox<>();
-        backdrop.getItems().addAll(Backdrop.values());
-        backdrop.setValue(Backdrop.GRID);
+        backdrop.getItems().addAll(Backdrops.ALL);
+        backdrop.setValue(Backdrops.DEFAULT);
+        backdrop.setConverter(named(Backdrop::name));
         backdrop.setMaxWidth(Double.MAX_VALUE);
         backdrop.setOnAction(e -> view.setBackdrop(backdrop.getValue()));
 
@@ -142,6 +134,20 @@ public final class GraphLab extends BorderPane {
         title("Medidas");
         readout.getStyleClass().add("readout");
         controls.getChildren().add(readout);
+    }
+
+    private static <T> StringConverter<T> named(java.util.function.Function<T, String> name) {
+        return new StringConverter<>() {
+            @Override
+            public String toString(T item) {
+                return item == null ? "" : name.apply(item);
+            }
+
+            @Override
+            public T fromString(String text) {
+                return null;
+            }
+        };
     }
 
     private void title(String text) {

@@ -6,6 +6,7 @@ import io.github.luanfrombrazil.secondbrain.graph.layout.LayoutRun;
 import io.github.luanfrombrazil.secondbrain.graph.view.camera.ZoomLevel;
 import io.github.luanfrombrazil.secondbrain.graph.view.camera.Camera;
 import io.github.luanfrombrazil.secondbrain.graph.view.backdrop.Backdrop;
+import io.github.luanfrombrazil.secondbrain.graph.view.backdrop.Backdrops;
 import io.github.luanfrombrazil.secondbrain.graph.view.data.PointNote;
 import io.github.luanfrombrazil.secondbrain.graph.view.data.CardData;
 import io.github.luanfrombrazil.secondbrain.graph.Edge;
@@ -60,7 +61,7 @@ public final class GraphView extends Region {
     List<PointNote> pointNotes = List.of();
 
     Layout layout;
-    Backdrop backdrop = Backdrop.GRID;
+    Backdrop backdrop = Backdrops.DEFAULT;
     boolean showConnections = true;
     boolean showLinks = true;
     ZoomLevel level = ZoomLevel.MEDIUM;

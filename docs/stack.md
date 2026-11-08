@@ -38,7 +38,7 @@ Os pacotes seguem as partes do produto, com o modelo e a tela juntos, e não cam
 | `graph.view` | A tela infinita: `GraphView`, `GraphRenderer` e `ViewParameters` |
 | `graph.view.camera` | `Camera` e `ZoomLevel` |
 | `graph.view.data` | O que o grafo mostra de cada card: `CardData` e `PointNote` |
-| `graph.view.backdrop` | Os fundos do espaço (`Backdrop`) |
+| `graph.view.backdrop` | O contrato dos fundos: `Backdrop` e a lista `Backdrops`. `.plain`, `.lined`, `.dotted` e `.grid` têm um padrão cada, e `.common` tem a grade de dois níveis que eles reaproveitam |
 | `graph.lab` | O laboratório para ajustar a física (`GraphLab`) e os exemplos (`Samples`) |
 
 Os próximos pacotes nascem com as fases de [implementacao.md](implementacao.md).
