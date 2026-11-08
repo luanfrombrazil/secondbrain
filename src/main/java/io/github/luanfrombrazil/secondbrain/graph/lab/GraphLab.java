@@ -125,6 +125,12 @@ public final class GraphLab extends BorderPane {
         layoutSlider("Atração da pasta", 0, 0.2, () -> parameters.folderForce, v -> parameters.folderForce = v);
 
 
+        title("Setas");
+        addSlider("Espessura", 0.5, 8, () -> parameters.arrowWidth, value -> {
+            parameters.arrowWidth = value;
+            view.markDirty();
+        });
+
         title("Zoom semântico (escala de cada troca)");
         String[] names = {"Bolinha → miniatura", "Miniatura → afastado", "Afastado → médio", "Médio → próximo"};
         for (int i = 0; i < names.length; i++) {

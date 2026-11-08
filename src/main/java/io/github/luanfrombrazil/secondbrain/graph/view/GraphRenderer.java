@@ -335,7 +335,8 @@ final class GraphRenderer {
     private void drawConnections(GraphView t, GraphicsContext g, Camera c, double width, double height) {
         boolean dots = t.level == ZoomLevel.FARTHEST;
         String focus = t.hovered != null ? t.hovered : t.selected;
-        double thickness = Math.clamp(2.2 * c.scale(), 1, 2.6);
+        double base = t.parameters().arrowWidth;
+        double thickness = Math.clamp(base * c.scale(), base * 0.45, base * 1.2);
         for (Edge a : t.connections()) {
             boolean highlight = focus != null && (a.source().equals(focus) || a.target().equals(focus));
             if (dots && !highlight) {
@@ -445,7 +446,7 @@ final class GraphRenderer {
             }
         }
         if (!fromCenters) {
-            drawArrowhead(g, curved ? c2x : x1, curved ? c2y : y1, x2, y2, Math.clamp(11 * c.scale(), 5, 13));
+            drawArrowhead(g, curved ? c2x : x1, curved ? c2y : y1, x2, y2, Math.clamp(11 * c.scale(), 5, 13) * Math.max(1, t.parameters().arrowWidth / 2.2));
         }
     }
 

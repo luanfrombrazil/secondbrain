@@ -227,6 +227,10 @@ public final class GraphView extends Region {
         dirty = true;
     }
 
+    Parameters parameters() {
+        return parameters;
+    }
+
     public LayoutType layoutType() {
         return type;
     }

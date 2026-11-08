@@ -21,6 +21,9 @@ public final class Parameters {
     public double folderForce = 0.03;
 
 
+    // Arrows
+    public double arrowWidth = 2.2;
+
     // Zoom thresholds between the five levels, from farthest to nearest
     public final double[] zoomThresholds = {0.14, 0.30, 0.55, 0.86};
 
@@ -35,9 +38,10 @@ public final class Parameters {
                 gravity = %.3f
                 friction = %.2f
                 folderForce = %.3f
+                arrowWidth = %.1f
                 zoomThresholds = %.2f, %.2f, %.2f, %.2f
                 """, columnGap, rowGap, ringStep, repulsion, springStrength, springLength,
-                gravity, friction, folderForce,
+                gravity, friction, folderForce, arrowWidth,
                 zoomThresholds[0], zoomThresholds[1], zoomThresholds[2], zoomThresholds[3]);
     }
 }
