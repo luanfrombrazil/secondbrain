@@ -1,0 +1,121 @@
+/* Tema escuro. As cores ficam aqui para um dia virarem temas. */
+
+.root {
+    -fx-font-family: "Inter", "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+}
+
+.trilha {
+    -fx-background-color: #1e1f22;
+}
+
+/* Card */
+
+.card {
+    -fx-pref-width: 220;
+    -fx-background-color: #2b2d30;
+    -fx-background-radius: 8;
+    -fx-border-color: #393b40;
+    -fx-border-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.06), 14, 0, 0, 0);
+}
+
+.faixa {
+    -fx-min-height: 4;
+    -fx-pref-height: 4;
+    -fx-background-radius: 8 8 0 0;
+}
+
+.estado-bloqueado    { -fx-background-color: #e5534b; }
+.estado-disponivel   { -fx-background-color: #e6b450; }
+.estado-em_andamento { -fx-background-color: #3574f0; }
+.estado-concluido    { -fx-background-color: #57a64a; }
+
+.titulo {
+    -fx-text-fill: #dfe1e5;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-padding: 10 12 8 12;
+}
+
+.tarefas {
+    -fx-spacing: 4;
+    -fx-padding: 8 12 8 12;
+    -fx-border-color: #393b40 transparent transparent transparent;
+}
+
+.check-box {
+    -fx-text-fill: #bcbec4;
+}
+
+.check-box:selected .text {
+    -fx-strikethrough: true;
+    -fx-fill: #6f737a;
+}
+
+.texto {
+    -fx-text-fill: #8c8f94;
+    -fx-padding: 6 12 6 12;
+}
+
+.rodape {
+    -fx-spacing: 8;
+    -fx-alignment: center-left;
+    -fx-padding: 8 12 10 12;
+    -fx-border-color: #393b40 transparent transparent transparent;
+}
+
+.progress-bar > .track {
+    -fx-background-color: #393b40;
+    -fx-background-radius: 2;
+}
+
+.progress-bar > .bar {
+    -fx-background-color: #3574f0;
+    -fx-background-insets: 0;
+    -fx-background-radius: 2;
+    -fx-padding: 2;
+}
+
+.icone-tipo {
+    -fx-text-fill: #8c8f94;
+}
+
+/* Conexões e links */
+
+.conexao {
+    -fx-stroke: #8c8f94;
+    -fx-stroke-width: 1.5;
+}
+
+.link {
+    -fx-stroke: #5a5d63;
+    -fx-stroke-dash-array: 6 6;
+}
+
+/* Menus (disposição e fundo) */
+
+.menu {
+    -fx-spacing: 4;
+    -fx-padding: 4;
+    -fx-background-color: #2b2d30;
+    -fx-background-radius: 8;
+    -fx-border-color: #393b40;
+    -fx-border-radius: 8;
+}
+
+.menu .toggle-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 6;
+    -fx-text-fill: #bcbec4;
+    -fx-padding: 6 12 6 12;
+}
+
+.menu .toggle-button:hover {
+    -fx-background-color: #393b40;
+}
+
+.menu .toggle-button:selected {
+    -fx-background-color: #3574f0;
+    -fx-text-fill: #ffffff;
+}
