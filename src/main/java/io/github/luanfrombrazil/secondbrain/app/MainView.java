@@ -356,6 +356,7 @@ final class MainView extends BorderPane implements GraphEditor {
     private void openNoteEditor(Card card) {
         attempt(() -> {
             closeNoteEditor();
+            vault.fillIfEmpty(editor.track(), card);
             noteEditor = new NoteEditorPane(vault.notePath(card), vault.cacheFolder(card), this::closeNoteEditor);
             noteEditor.setPrefWidth(getWidth() * 0.55);
             setRight(noteEditor);

@@ -83,6 +83,21 @@ class VaultTest {
     }
 
     @Test
+    void anEmptyNoteReceivesTheStartingTextButAWrittenOneIsKept() throws IOException {
+        try (Vault vault = Vault.open(root)) {
+            Track track = vault.createTrack("T");
+            Card card = vault.createCard(track, null, "C");
+            Path note = vault.notePath(card);
+            Files.writeString(note, "");
+            vault.fillIfEmpty(track, card);
+            assertTrue(Files.readString(note).contains("documentclass"));
+            Files.writeString(note, "meu texto");
+            vault.fillIfEmpty(track, card);
+            assertEquals("meu texto", Files.readString(note));
+        }
+    }
+
+    @Test
     void savingAgainDoesNotLeaveTemporaryFiles() throws IOException {
         try (Vault vault = Vault.open(root)) {
             Track track = vault.createTrack("T");

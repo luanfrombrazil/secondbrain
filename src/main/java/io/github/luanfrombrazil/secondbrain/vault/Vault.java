@@ -180,6 +180,14 @@ public final class Vault implements AutoCloseable {
         return track.preamble() + "\n\\title{" + title + "}\n\\author{}\n\n\\begin{document}\n\\maketitle\n\n\n\\end{document}\n";
     }
 
+    /** Gives an empty note the track's starting text, so that it can compile. */
+    public void fillIfEmpty(Track track, Card card) throws IOException {
+        Path note = notePath(card);
+        if (Files.exists(note) && Files.size(note) == 0) {
+            Files.writeString(note, noteTemplate(track, card.title()), StandardCharsets.UTF_8);
+        }
+    }
+
     public Path notePath(Card card) {
         return root.resolve(card.notePath());
     }
