@@ -10,6 +10,7 @@ import io.github.luanfrombrazil.secondbrain.property.TasksProperty;
 import io.github.luanfrombrazil.secondbrain.track.StateOption;
 import io.github.luanfrombrazil.secondbrain.track.Track;
 
+import java.awt.Desktop;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
@@ -18,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,6 +35,7 @@ public final class Vault implements AutoCloseable {
 
     private static final int VERSION = 1;
     private static final String APP_FOLDER = ".secondbrain";
+    private static final String SETTINGS_FILE = "settings.yaml";
 
     private final Path root;
     private final FileChannel lockChannel;
@@ -149,6 +152,78 @@ public final class Vault implements AutoCloseable {
         }
         data.put("properties", properties);
         YamlFiles.write(cardFile(card.id()), data);
+    }
+
+    /**
+     * Removes a card with no inner graph: the note goes to the system trash (D-34).
+     *
+     * @return the note's content, for undoing
+     */
+    public byte[] deleteCard(Track track, Card parent, Card card) throws IOException {
+        if (!card.innerCards().isEmpty()) {
+            throw new IOException("Card has an inner graph: " + card.id());
+        }
+        Path note = root.resolve(card.notePath());
+        byte[] content = Files.exists(note) ? Files.readAllBytes(note) : new byte[0];
+        moveToTrash(note, content.length);
+        level(track, parent).remove(card);
+        Files.deleteIfExists(cardFile(card.id()));
+        return content;
+    }
+
+    /** Puts a deleted card back, with its note. */
+    public void restoreCard(Track track, Card parent, Card card, byte[] noteContent) throws IOException {
+        Path note = root.resolve(card.notePath());
+        Files.createDirectories(note.getParent());
+        Files.write(note, noteContent);
+        level(track, parent).add(card);
+        saveCard(track, card, parent);
+    }
+
+    /** Saves these cards, wherever they are in the track. */
+    public void saveCards(Track track, Collection<Card> cards) throws IOException {
+        Map<Card, Card> parents = new HashMap<>();
+        collectParents(track.cards(), null, parents);
+        for (Card card : cards) {
+            saveCard(track, card, parents.get(card));
+        }
+    }
+
+    public Map<String, Object> readSettings() throws IOException {
+        Path file = root.resolve(APP_FOLDER).resolve(SETTINGS_FILE);
+        return Files.exists(file) ? YamlFiles.read(file) : Map.of();
+    }
+
+    public void saveSettings(Map<String, Object> settings) throws IOException {
+        Map<String, Object> data = new LinkedHashMap<>(settings);
+        data.put("version", VERSION);
+        YamlFiles.write(root.resolve(APP_FOLDER).resolve(SETTINGS_FILE), data);
+    }
+
+    private static void collectParents(List<Card> level, Card parent, Map<Card, Card> parents) {
+        for (Card card : level) {
+            parents.put(card, parent);
+            collectParents(card.innerCards(), card, parents);
+        }
+    }
+
+    private static List<Card> level(Track track, Card parent) {
+        return parent == null ? track.cards() : parent.innerCards();
+    }
+
+    /** An empty note holds nothing to recover, so it can simply go. */
+    private static void moveToTrash(Path note, long size) throws IOException {
+        if (!Files.exists(note)) {
+            return;
+        }
+        if (size == 0) {
+            Files.delete(note);
+            return;
+        }
+        if (!Desktop.isDesktopSupported() || !Desktop.getDesktop().isSupported(Desktop.Action.MOVE_TO_TRASH)
+                || !Desktop.getDesktop().moveToTrash(note.toFile())) {
+            throw new IOException("Could not move to the trash: " + note);
+        }
     }
 
     @Override

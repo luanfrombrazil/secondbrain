@@ -76,6 +76,7 @@ public final class GraphView extends Region {
     private String followed;
     private boolean frameWhenSettled;
     String connectingFrom;
+    private GraphEditor editor;
     String dropTarget;
     double mouseX;
     double mouseY;
@@ -203,6 +204,59 @@ public final class GraphView extends Region {
             followed = closestTo(getWidth() / 2, getHeight() / 2);
         }
         recompute();
+    }
+
+    private void connectOrDelegate(String source, String target) {
+        if (editor == null) {
+            connect(source, target);
+        } else {
+            followed = target;
+            editor.connect(source, target);
+        }
+    }
+
+    private void createOrDelegate(double screenX, double screenY) {
+        if (editor == null) {
+            createLooseCard(camera.worldX(screenX), camera.worldY(screenY));
+        } else {
+            editor.createCardAt(camera.worldX(screenX), camera.worldY(screenY), screenX, screenY);
+        }
+    }
+
+    /** When set, the edits made on the canvas go to the editor instead of changing the sample graph. */
+    public void setEditor(GraphEditor editor) {
+        this.editor = editor;
+    }
+
+    /** Shows new data keeping the camera and the cards that are still there. */
+    public void refresh(Graph newGraph, Map<String, CardData> newCards, List<PointNote> notes) {
+        graph = newGraph;
+        cards.clear();
+        cards.putAll(newCards);
+        pointNotes = notes;
+        visuals.keySet().retainAll(cards.keySet());
+        if (selected != null && !cards.containsKey(selected)) {
+            selected = null;
+        }
+        if (hovered != null && !cards.containsKey(hovered)) {
+            hovered = null;
+        }
+        recompute();
+    }
+
+    public String selectedCard() {
+        return selected;
+    }
+
+    /** Selects a card and moves the camera to it. */
+    public void focusCard(String id) {
+        Visual visual = visuals.get(id);
+        if (visual != null) {
+            selected = id;
+            followed = id;
+            camera.centerOn(visual.targetX, visual.targetY, getWidth(), getHeight());
+            dirty = true;
+        }
     }
 
     public void recenter() {
@@ -463,7 +517,7 @@ public final class GraphView extends Region {
         } else if (e.getEventType() == MouseEvent.MOUSE_RELEASED) {
             if (connectingFrom != null) {
                 if (dropTarget != null && graph.canConnect(connectingFrom, dropTarget)) {
-                    connect(connectingFrom, dropTarget);
+                    connectOrDelegate(connectingFrom, dropTarget);
                 }
                 connectingFrom = null;
                 dropTarget = null;
@@ -501,7 +555,9 @@ public final class GraphView extends Region {
                 && e.getButton() == MouseButton.PRIMARY && !dragged) {
             String clicked = renderer.cardAt(this, camera, e.getX(), e.getY());
             if (e.getClickCount() == 2 && clicked == null) {
-                createLooseCard(camera.worldX(e.getX()), camera.worldY(e.getY()));
+                createOrDelegate(e.getX(), e.getY());
+            } else if (e.getClickCount() == 2 && editor != null) {
+                editor.openCard(clicked);
             } else if (e.getClickCount() == 1) {
                 selected = clicked;
                 Visual visual = clicked == null ? null : visuals.get(clicked);

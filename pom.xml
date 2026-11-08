@@ -14,6 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>27.0.1</javafx.version>
         <junit.version>6.1.3</junit.version>
+        <app.main>io.github.luanfrombrazil.secondbrain.app.SecondBrainApp</app.main>
     </properties>
 
     <dependencies>
@@ -56,7 +57,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>io.github.luanfrombrazil.secondbrain/io.github.luanfrombrazil.secondbrain.app.SecondBrainApp</mainClass>
+                    <mainClass>io.github.luanfrombrazil.secondbrain/${app.main}</mainClass>
                     <options>
                         <option>--enable-native-access=javafx.graphics</option>
                     </options>
@@ -64,4 +65,14 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <!-- mvn javafx:run -Plab abre o laboratório do grafo -->
+            <id>lab</id>
+            <properties>
+                <app.main>io.github.luanfrombrazil.secondbrain.graph.lab.GraphLabApp</app.main>
+            </properties>
+        </profile>
+    </profiles>
 </project>

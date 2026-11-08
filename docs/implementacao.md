@@ -22,6 +22,12 @@ O trabalho das fases 0 a 4 fica em `dev`. A partir da fase 5, cada módulo sai d
 mvn javafx:run
 ```
 
+Para abrir o laboratório do grafo, que continua disponível para testes:
+
+```
+mvn javafx:run -Plab
+```
+
 No laboratório: arrastar move a tela, a roda do mouse dá zoom, clique duplo no vazio cria um card solto. **Copiar valores** copia os parâmetros atuais, que viram os padrões depois de aprovados.
 
 Para gerar imagens da tela em `target/captures/`:
