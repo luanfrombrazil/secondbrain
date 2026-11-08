@@ -44,7 +44,7 @@ Inspirada nas caixas de um diagrama de classes, com compartimentos separados por
 
 ## Grafo interno (card maximizado)
 
-- O botão maximizar abre um **modal** com um espaço quadriculado próprio.
+- O botão maximizar **troca a tela inteira** pelo grafo interno, com o caminho no topo. Não é um modal.
 - **Os cards internos são exatamente iguais aos de fora.** É um grafo dentro do card. Em Cálculo II: Funções de várias variáveis → Limites → Derivadas parciais → (Gradiente, Máximos e mínimos → Lagrange, Integrais duplas → Integrais triplas e Coordenadas polares).
 - Os cards internos que não têm grafo próprio não mostram o botão maximizar.
 - O espaço interno também aceita **notas** e **arquivos**, ligados aos cards por links.
@@ -52,7 +52,7 @@ Inspirada nas caixas de um diagrama de classes, com compartimentos separados por
 
 ## Nota principal e notas internas
 
-- O modal alterna entre **Nota** e **Grafo**.
+- A tela do card alterna entre **Nota** e **Grafo**.
 - **Cálculo II** tem uma **nota global principal**.
 - **Clicar num card interno** abre a nota dele. Uma **seta de voltar** leva à nota principal, e o caminho completo aparece no topo (Engenharia de Computação › Cálculo II › Derivadas parciais).
 - O progresso mostrado no topo é o do card aberto.

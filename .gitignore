@@ -1,0 +1,12 @@
+# Build
+target/
+
+# IDE
+.idea/
+*.iml
+
+# Obsidian
+.obsidian/
+
+# Material interno, fora do git
+interno/

@@ -400,9 +400,9 @@ classDiagram
 
 - **Nada é regra, tudo é informação.** Estado, conexão e progresso servem para visualizar e organizar. Nenhum deles impede o usuário de abrir, editar ou mudar um card.
 
-- Uma conexão só liga **cards** da **mesma trilha**, e é bom evitar **ciclo**: o app aceita, mas a disposição por dependência não tem como arrumar um ciclo da esquerda para a direita.
+- Uma conexão só liga **cards** da **mesma trilha**, e **não pode formar ciclo**: o app recusa a conexão que fecharia um ciclo (D-52).
 - Um **link** liga quaisquer dois elementos: card com card, card com PDF, card com repositório, livro com card. Um link **pode ligar trilhas diferentes** (ao contrário da conexão), por isso ele não pertence a uma trilha só.
-- **Um link nasce de dois jeitos.** **Automático:** a nota tem uma referência (`\href{…}` no `.tex`, `[[…]]` no `.md`). Esse link é lido do texto, como a nota fantasma, e não é guardado: apagar a referência apaga o link. **Manual:** o usuário solta um elemento num card (ou usa "Vincular" no editor). Esse fica no arquivo do card em `.secondbrain/` e não aparece no texto da nota.
+- **Um link nasce de dois jeitos.** **Automático:** a nota tem uma referência (o comando próprio `\nota{slug}{texto}` no `.tex`, trocado por `\href` quando o arquivo é usado fora do app; `[[…]]` no `.md`). Se o nome existe em mais de uma trilha, o app pergunta qual é ao criar e grava o caminho. Esse link é lido do texto, como a nota fantasma, e não é guardado: apagar a referência apaga o link. **Manual:** o usuário solta um elemento num card (ou usa "Vincular" no editor). Esse fica no arquivo do card em `.secondbrain/` e não aparece no texto da nota.
 - **Arquivos, imagens, PDFs, repositórios e livros avulsos** ficam no espaço da trilha (ou no grafo interno de um card) como elementos de peso baixo: só aparecem no zoom próximo, ligados por links.
 - **Relacionados** é a propriedade do card que lista elementos ligados a ele sem fazer parte dele. É a versão em lista do que os links mostram no grafo.
 - Cada tipo de arquivo tem **a sua exibição** (Strategy): o PDF é um card comprido com prévia 9:16, a imagem mostra a miniatura, os outros mostram ícone e nome. Um tipo novo é só uma exibição nova.
@@ -668,21 +668,26 @@ Acervo/
     tipos/                             ← os tipos de card
     selecoes/                          ← estados e outras seleções, com as opções
     trilhas/
-      <id da trilha>                   ← visualizações, filtros e biblioteca da trilha
+      <id da trilha>                   ← visualizações, filtros, biblioteca, estados, tipos, seleções e preâmbulo comum da trilha
+      <id da trilha>.bib               ← gerado pela Bibliografia, editável
     cards/
-      <id do card>                     ← um arquivo por card
+      <id do card>.yaml                ← um arquivo por card
+    elementos/
+      <id do elemento>.yaml            ← arquivo só pelo caminho, repositório, livro
+    cache/                             ← PDFs compilados (vão para a pasta só ao exportar)
     calendario/                        ← sincronização com o Google Calendar
       contas                           ← quais calendários entram e saem (o token fica no cofre do sistema, não aqui)
       eventos                          ← eventos importados ainda não viraram card, recusados e o syncToken
   Engenharia de Computação/
-    Cálculo II.tex                     ← só o texto
-    Cálculo II/
+    calculo-ii.tex                     ← só o texto; nome em slug, o título fica no arquivo do card
+    calculo-ii/
 ```
 
 O arquivo de um card guarda:
 - o **caminho da nota** dentro do acervo (por exemplo `Engenharia de Computação/Cálculo II.tex`);
 - as **propriedades**: tipo, estado, tarefas, datas, bibliografia, vídeos, relacionados e as que o usuário criar;
-- as **conexões e links que saem** dele.
+- as **conexões** de que ele depende (a conexão fica no arquivo do **dependente**) e os **links manuais** que saem dele;
+- o **estado anterior** ao último bloqueio automático, para restaurar depois (D-41).
 
 Por quê:
 - **Um arquivo por card:** cada mudança mexe num arquivo pequeno, um erro afeta um card só, e o git ou a nuvem mostram exatamente qual card mudou.
@@ -690,8 +695,11 @@ Por quê:
 - **Por id, não pelo nome:** o arquivo do card tem um id fixo e guarda o caminho da nota. Renomear o card no app só atualiza o caminho.
 
 Cuidados:
-- **Renomear ou mover por fora:** com o app aberto, o `WatchService` do Java percebe e atualiza o caminho. Com o app fechado, a ligação se perde. Isso é responsabilidade do usuário, e o app mostra as propriedades **órfãs** em vez de apagar.
-- **Formato dos arquivos** (JSON, YAML...) ainda não foi escolhido. Isso é questão de código.
+- **Renomear no app:** atualiza o caminho e também os links nas outras notas, sem perguntar (D-49).
+- **Renomear ou mover por fora:** com o app aberto, o `WatchService` do Java percebe e atualiza o caminho. Com o app fechado, o card fica em **erro** (vermelho, tracejado); se aparecer uma nota quase igual, ele sugere religar.
+- **Pasta existente:** ao abrir, o usuário escolhe converter todas as notas em cards de uma vez; se não, o arquivo do card nasce na primeira edição (D-48).
+- **Formato:** YAML, com um campo `versao` para migrações (D-53).
+- **Uma janela por acervo.** Se a nota aberta muda por fora, o app pergunta se recarrega (há configuração para recarregar sempre).
 
 ---
 
@@ -699,7 +707,7 @@ Cuidados:
 
 **O estado é informativo, nunca uma trava.** Um card Bloqueado não fica bloqueado de verdade: só avisa que o conhecimento de que ele depende ainda não foi atingido. Dá para abrir, editar e mudar o estado de qualquer card a qualquer momento.
 
-Os estados são personalizados, e cada um pertence a uma categoria. O diagrama mostra as **categorias**. As setas cheias são o que o app **sugere sozinho** a partir das conexões e do progresso. Por cima disso, o usuário troca para qualquer estado quando quiser. Mas quando uma dependência muda, a sugestão automática passa por cima da escolha: um card Em andamento cuja dependência deixa de estar concluída volta para Bloqueado sozinho.
+Os estados são personalizados, e cada um pertence a uma categoria. O diagrama mostra as **categorias**. As setas cheias são o que o app **sugere sozinho** a partir das conexões e do progresso. Por cima disso, o usuário troca para qualquer estado quando quiser. Mas quando uma dependência muda, a sugestão automática passa por cima da escolha: um card **Disponível ou Em andamento** cuja dependência deixa de estar concluída volta para Bloqueado sozinho. Um card **Concluído nunca volta**, e nada passa adiante em cascata (D-40).
 
 ```mermaid
 stateDiagram-v2
@@ -709,6 +717,7 @@ stateDiagram-v2
     Bloqueado --> Disponivel : dependências concluídas
     Disponivel --> Bloqueado : ganhou dependência não concluída
     EmAndamento --> Bloqueado : dependência deixou de estar concluída
+    Disponivel --> EmAndamento : primeira tarefa marcada
     EmAndamento --> Concluido : progresso chega a 100%
     Concluido --> EmAndamento : tarefa desmarcada ou nova tarefa
 
@@ -726,7 +735,14 @@ stateDiagram-v2
     end note
 ```
 
-- Quando um card fica **Concluído**, os que dependem dele são reavaliados e podem passar de Bloqueado para Disponível.
+- Quando um card fica **Concluído**, os que dependem dele são reavaliados e saem de Bloqueado para o **estado que tinham antes** do bloqueio (ou Disponível, se nasceram bloqueados).
+- **Quando reavaliar:** ao editar no app, ao abrir o app e quando um arquivo muda por fora.
+- Um card **Bloqueado com 100% das tarefas** continua Bloqueado até as dependências serem concluídas.
+- Nas mudanças automáticas, o app usa a **primeira opção** da categoria, na ordem do usuário.
+- Um card **sem a propriedade Estado** não bloqueia ninguém.
+- Os cards de um **grafo interno herdam** o bloqueio do card pai.
+- **Erro** é um estado do sistema, não do usuário: o card fica levemente vermelho e tracejado quando a opção de estado ou o tipo dele foi apagado, ou quando o arquivo da nota sumiu. Fica assim até o usuário resolver.
+- **Mover** um card para outra pasta ou trilha remove as conexões dele e religa a cadeia: os pré-requisitos passam para os dependentes.
 - No **kanban**, arrastar um card para qualquer coluna sempre funciona, mesmo que ele esteja "bloqueado" ou com tarefas pendentes.
 
 ---
@@ -904,7 +920,7 @@ Regras que valem para todas as linhas:
 | **Seta no topo do card** (expandir) | Abre o painel vertical com tudo o que o card guarda: tarefas, bibliografia, vídeos e relacionados. | Fica por cima dos vizinhos; a disposição não muda. Clicar na seta de novo recolhe. |
 | **Botão maximizar** | Abre o grafo interno do card. | Só existe em card com pasta de mesmo nome (2.4). |
 | **Clique duplo num card** | Abre o editor do card no lugar dele, sobre o grafo escurecido (5.7). | **Pronto** ou Esc fecha. |
-| **Arrastar da alça de um card até outro** | Cria uma conexão de dependência. | Só entre cards da mesma trilha: um alvo de outra trilha, ou que não é card, não acende. Ciclo é aceito (a disposição por dependência só não consegue ordená-lo). Os estados são reavaliados na hora (seção 3). |
+| **Arrastar da alça de um card até outro** | Cria uma conexão de dependência. | Só entre cards da mesma trilha: um alvo de outra trilha, ou que não é card, não acende. Uma conexão que fecharia um ciclo é recusada. Os estados são reavaliados na hora (seção 3). |
 | **Apagar uma conexão** | Selecionar a seta e Delete (proposta). | Os estados são reavaliados. |
 | **Escrever uma referência na nota** | Cria o link automático (4.3). | Sugere notas e arquivos de todas as trilhas. Apagar a referência apaga o link. |
 | **Buscar no grafo** | Traz os resultados (arquivos da trilha, arquivos só pelo caminho, livros da biblioteca) para perto dos cards em foco. | Não muda nada até o usuário soltar o resultado. |
