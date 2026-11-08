@@ -4,8 +4,11 @@ import io.github.luanfrombrazil.secondbrain.graph.Graph;
 import io.github.luanfrombrazil.secondbrain.graph.Node;
 import io.github.luanfrombrazil.secondbrain.graph.Point;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,7 +36,36 @@ public final class LooseCards {
                 fixedIds.add(node.id());
             }
         }
-        return MagneticRepulsion.apply(positions, fixedIds, MAGNETIC_RADIUS);
+        return MagneticRepulsion.apply(positions, fixedIds, MAGNETIC_RADIUS, connectedGroups(graph, arranged.keySet()));
+    }
+
+    /** The sets of cards joined by connections, which must move together. */
+    private static List<Set<String>> connectedGroups(Graph graph, Set<String> arranged) {
+        List<Set<String>> groups = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (String start : arranged) {
+            if (!seen.add(start)) {
+                continue;
+            }
+            Set<String> group = new HashSet<>();
+            ArrayDeque<String> pending = new ArrayDeque<>(List.of(start));
+            while (!pending.isEmpty()) {
+                String id = pending.pop();
+                group.add(id);
+                for (String next : graph.dependenciesOf(id)) {
+                    if (seen.add(next)) {
+                        pending.add(next);
+                    }
+                }
+                for (String next : graph.dependentsOf(id)) {
+                    if (seen.add(next)) {
+                        pending.add(next);
+                    }
+                }
+            }
+            groups.add(group);
+        }
+        return groups;
     }
 
     private static void placeInStrip(Graph graph, Map<String, Point> positions, double rowGap) {

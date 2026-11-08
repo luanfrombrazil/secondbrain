@@ -61,6 +61,21 @@ class LayoutsTest {
     }
 
     @Test
+    void aChainNearFixedCardsKeepsItsOrderAndRow() {
+        Graph g = new Graph(List.of(
+                new Node("a", null, null), new Node("b", null, null), new Node("c", null, null),
+                new Node("x", null, new Point(100, 80)), new Node("y", null, new Point(500, -60))),
+                List.of(new Edge("a", "b"), new Edge("b", "c")), List.of());
+        Map<String, Point> pos = new DependencyLayout().compute(g);
+        assertEquals(pos.get("a").y(), pos.get("b").y(), 1e-9);
+        assertEquals(pos.get("b").y(), pos.get("c").y(), 1e-9);
+        assertTrue(pos.get("a").x() < pos.get("b").x());
+        assertTrue(pos.get("b").x() < pos.get("c").x());
+        assertEquals(new Point(100, 80), pos.get("x"));
+        assertNoOverlap(pos);
+    }
+
+    @Test
     void childWithTwoParentsSitsBetweenThem() {
         Map<String, Point> pos = new DependencyLayout().compute(graph(List.of("a", "b", "c", "d"), "a>c", "b>c", "c>d"));
         assertEquals((pos.get("a").y() + pos.get("b").y()) / 2, pos.get("c").y(), 1e-9);
