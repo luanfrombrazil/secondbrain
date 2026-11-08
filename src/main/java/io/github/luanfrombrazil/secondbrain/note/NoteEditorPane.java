@@ -130,10 +130,11 @@ public final class NoteEditorPane extends BorderPane {
         compiling = true;
         status.setText("Compilando…");
         long request = latestCompile.incrementAndGet();
+        String content = NoteDocument.compose(preamble, title, code.getText());
         Thread.ofVirtual().start(() -> {
             TectonicCompiler.Result result;
             try {
-                result = compiler.get().compile(texFile, cacheFolder);
+                result = compiler.get().compile(texFile, content, cacheFolder);
             } catch (IOException | InterruptedException e) {
                 result = new TectonicCompiler.Result(null, List.of(new TectonicCompiler.Problem(0, e.getMessage())), "");
             }

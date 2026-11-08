@@ -32,6 +32,15 @@ class TectonicIntegrationTest {
     }
 
     @Test
+    void filesNextToTheNoteAreFound() throws Exception {
+        Path tex = folder.resolve("nota.tex");
+        Files.writeString(folder.resolve("parte.tex"), "Texto de outra parte.\n");
+        Files.writeString(tex, "\\documentclass{article}\n\\begin{document}\n\\input{parte}\n\\end{document}\n");
+        TectonicCompiler.Result result = TectonicCompiler.find().orElseThrow().compile(tex, folder.resolve("saida"));
+        assertTrue(result.succeeded(), result.log());
+    }
+
+    @Test
     void anErrorIsReportedWithItsLine() throws Exception {
         Path tex = folder.resolve("ruim.tex");
         Files.writeString(tex, "\\documentclass{article}\n\\begin{document}\nOi.\n\\naoexiste\n\\end{document}\n");

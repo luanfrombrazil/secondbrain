@@ -45,10 +45,23 @@ public final class TectonicCompiler {
     }
 
     public Result compile(Path texFile, Path outputFolder) throws IOException, InterruptedException {
+        return compile(texFile, Files.readString(texFile, StandardCharsets.UTF_8), outputFolder);
+    }
+
+    /**
+     * Compiles this text as if it were the note's file. Works on a private copy, because the
+     * note may be saved again while the compiler is reading; images and inputs are still
+     * found next to the note.
+     */
+    public Result compile(Path texFile, String content, Path outputFolder) throws IOException, InterruptedException {
         Files.createDirectories(outputFolder);
-        Process process = new ProcessBuilder(executable.toString(), "-X", "compile", texFile.getFileName().toString(),
-                "--synctex", "--outdir", outputFolder.toAbsolutePath().toString())
-                .directory(texFile.toAbsolutePath().getParent().toFile())
+        String fileName = texFile.getFileName().toString();
+        Path copy = outputFolder.resolve(fileName);
+        Files.writeString(copy, content, StandardCharsets.UTF_8);
+        Process process = new ProcessBuilder(executable.toString(), "-X", "compile", fileName,
+                "--synctex", "--outdir", ".",
+                "-Z", "search-path=" + texFile.toAbsolutePath().getParent())
+                .directory(outputFolder.toAbsolutePath().toFile())
                 .redirectErrorStream(true)
                 .start();
         StringBuilder log = new StringBuilder();
