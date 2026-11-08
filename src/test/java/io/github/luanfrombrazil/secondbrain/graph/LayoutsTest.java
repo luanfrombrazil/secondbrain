@@ -86,6 +86,14 @@ class LayoutsTest {
     }
 
     @Test
+    void aSkippingConnectionPassesStraightBetweenTwoCards() {
+        Map<String, Point> pos = new DependencyLayout().compute(
+                graph(List.of("a", "b", "d", "c"), "a>b", "a>d", "b>c", "d>c", "a>c"));
+        assertEquals(pos.get("a").y(), pos.get("c").y(), 1e-9);
+        assertEquals(pos.get("a").y(), (pos.get("b").y() + pos.get("d").y()) / 2, 1e-9);
+    }
+
+    @Test
     void childWithTwoParentsSitsBetweenThem() {
         Map<String, Point> pos = new DependencyLayout().compute(graph(List.of("a", "b", "c", "d"), "a>c", "b>c", "c>d"));
         assertEquals((pos.get("a").y() + pos.get("b").y()) / 2, pos.get("c").y(), 1e-9);

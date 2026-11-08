@@ -62,6 +62,7 @@ public final class DependencyLayout implements Layout {
             reorder(graph, f, ys);
         }
 
+        centerMergesAndSeparate(graph, f, stepY, ys);
         clearSkippingConnections(graph, f, ys);
         centerMergesAndSeparate(graph, f, stepY, ys);
 
