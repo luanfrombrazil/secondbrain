@@ -9,4 +9,4 @@ target/
 .obsidian/
 
 # Material interno, fora do git
-interno/
+docs/interno/
