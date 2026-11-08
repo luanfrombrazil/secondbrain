@@ -110,6 +110,60 @@ class LevelEditorTest {
     }
 
     @Test
+    void markingTasksMovesTheStateAndFreesDependents() throws IOException {
+        Card a = editor.createCard("A", null);
+        Card b = editor.createCard("B", null);
+        editor.connect(a.id(), b.id());
+        editor.addTask(a, "Lista 1");
+        editor.addTask(a, "Lista 2");
+        editor.setTaskDone(a, 0, true);
+        assertEquals("in-progress", state(a));
+        editor.setTaskDone(a, 1, true);
+        assertEquals("done", state(a));
+        assertEquals("available", state(b));
+        editor.undo();
+        assertEquals("in-progress", state(a));
+        assertEquals("blocked", state(b));
+    }
+
+    @Test
+    void stateChosenByHandSticksAndCanBeUndone() throws IOException {
+        Card a = editor.createCard("A", null);
+        Card b = editor.createCard("B", null);
+        editor.connect(a.id(), b.id());
+        editor.setState(b, "in-progress");
+        assertEquals("in-progress", state(b));
+        editor.undo();
+        assertEquals("blocked", state(b));
+        editor.setState(b, null);
+        assertTrue(b.property(StateProperty.class).isEmpty());
+        editor.undo();
+        assertEquals("blocked", state(b));
+    }
+
+    @Test
+    void titleTypeSelectionAndTextSurviveReopening() throws IOException {
+        Card a = editor.createCard("A", null);
+        var type = editor.createType("Disciplina");
+        var selection = editor.createSelection("Prioridade", java.util.List.of("Alta", "Baixa"));
+        editor.setTitle(a, "Novo");
+        editor.setType(a, type.id());
+        editor.setSelection(a, selection.id(), selection.options().get(1).id());
+        editor.addText(a, "Nome oficial", "Cálculo");
+        vault.close();
+        vault = Vault.open(root);
+        Track track = vault.tracks().getFirst();
+        Card reloaded = track.cards().getFirst();
+        assertEquals("Novo", reloaded.title());
+        assertEquals(type.id(), reloaded.typeId());
+        assertEquals("Baixa", track.selections().getFirst().options().get(1).name());
+        assertEquals(selection.options().get(1).id(),
+                reloaded.property(io.github.luanfrombrazil.secondbrain.property.SelectionProperty.class).orElseThrow().optionId());
+        assertEquals("Cálculo",
+                reloaded.property(io.github.luanfrombrazil.secondbrain.property.TextProperty.class).orElseThrow().value());
+    }
+
+    @Test
     void aNewEditClearsWhatCouldBeRedone() throws IOException {
         editor.createCard("A", null);
         editor.undo();

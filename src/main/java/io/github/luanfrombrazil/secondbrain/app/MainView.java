@@ -61,6 +61,7 @@ final class MainView extends BorderPane implements GraphEditor {
     private final Label status = new Label();
     private final TextField newTrackName = new TextField();
     private LevelEditor editor;
+    private CardEditorPane cardEditor;
 
     MainView(Vault vault) throws IOException {
         this.vault = vault;
@@ -151,6 +152,7 @@ final class MainView extends BorderPane implements GraphEditor {
     }
 
     private void openTrack(Track track) throws IOException {
+        closeCardEditor();
         editor = editors.containsKey(track) ? editors.get(track) : new LevelEditor(vault, track);
         editors.put(track, editor);
         editor.open(null);
@@ -264,19 +266,53 @@ final class MainView extends BorderPane implements GraphEditor {
         });
     }
 
-    /** Double click: enters the card's inner graph, which is created with its first card. */
+    /** Double click: opens the card's editor. */
     @Override
     public void openCard(String id) {
         editor.level().stream().filter(c -> c.id().equals(id)).findFirst().ifPresent(card -> {
-            editor.open(card);
-            showLevel(true);
+            cardEditor = new CardEditorPane(editor, card, new CardEditorPane.Host() {
+                @Override
+                public void edited() {
+                    afterEdit();
+                }
+
+                @Override
+                public void showError(IOException error) {
+                    status.setText("Erro: " + error.getMessage());
+                }
+
+                @Override
+                public void close() {
+                    closeCardEditor();
+                }
+
+                @Override
+                public void openInnerGraph(Card card) {
+                    closeCardEditor();
+                    editor.open(card);
+                    showLevel(true);
+                }
+            });
+            setRight(cardEditor);
         });
+    }
+
+    private void closeCardEditor() {
+        cardEditor = null;
+        setRight(null);
     }
 
     private void afterEdit() {
         status.setText("");
         showLevel(false);
         rebuildExplorer();
+        if (cardEditor != null) {
+            if (editor.level().contains(cardEditor.card())) {
+                cardEditor.refresh();
+            } else {
+                closeCardEditor();
+            }
+        }
     }
 
     private void onKey(KeyEvent event) {

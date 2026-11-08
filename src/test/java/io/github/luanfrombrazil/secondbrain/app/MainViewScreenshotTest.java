@@ -47,6 +47,7 @@ class MainViewScreenshotTest {
                     Scene scene = new Scene(view, 1500, 900);
                     scene.getStylesheets().add(MainView.class.getResource("secondbrain.css").toExternalForm());
                     view.connect(first.id(), third.id());
+                    view.openCard(first.id());
                     view.applyCss();
                     view.layout();
                     view.graphView().settle();

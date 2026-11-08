@@ -7,6 +7,7 @@ import io.github.luanfrombrazil.secondbrain.property.Properties;
 import io.github.luanfrombrazil.secondbrain.property.Property;
 import io.github.luanfrombrazil.secondbrain.property.StateProperty;
 import io.github.luanfrombrazil.secondbrain.property.TasksProperty;
+import io.github.luanfrombrazil.secondbrain.track.Selection;
 import io.github.luanfrombrazil.secondbrain.track.StateOption;
 import io.github.luanfrombrazil.secondbrain.track.Track;
 
@@ -123,6 +124,7 @@ public final class Vault implements AutoCloseable {
         data.put("folder", track.folder());
         data.put("states", track.states().stream().map(Vault::optionData).toList());
         data.put("types", track.types().stream().map(Vault::typeData).toList());
+        data.put("selections", track.selections().stream().map(Vault::selectionData).toList());
         YamlFiles.write(trackFile(track.id()), data);
     }
 
@@ -280,6 +282,13 @@ public final class Vault implements AutoCloseable {
             track.types().add(new CardType((String) type.get("id"), (String) type.get("name"),
                     (String) type.get("icon"), (List<String>) type.get("properties")));
         }
+        for (Map<String, Object> selection : (List<Map<String, Object>>) data.getOrDefault("selections", List.of())) {
+            List<Selection.Option> options = new ArrayList<>();
+            for (Map<String, Object> option : (List<Map<String, Object>>) selection.get("options")) {
+                options.add(new Selection.Option((String) option.get("id"), (String) option.get("name")));
+            }
+            track.selections().add(new Selection((String) selection.get("id"), (String) selection.get("name"), options));
+        }
         return track;
     }
 
@@ -314,6 +323,15 @@ public final class Vault implements AutoCloseable {
         data.put("name", type.name());
         data.put("icon", type.icon());
         data.put("properties", type.initialProperties());
+        return data;
+    }
+
+    private static Map<String, Object> selectionData(Selection selection) {
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("id", selection.id());
+        data.put("name", selection.name());
+        data.put("options", selection.options().stream()
+                .map(o -> Map.<String, Object>of("id", o.id(), "name", o.name())).toList());
         return data;
     }
 

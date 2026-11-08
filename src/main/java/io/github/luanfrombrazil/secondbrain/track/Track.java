@@ -16,6 +16,7 @@ public final class Track {
     private final String folder;
     private final List<StateOption> states = new ArrayList<>();
     private final List<CardType> types = new ArrayList<>();
+    private final List<Selection> selections = new ArrayList<>();
     private final List<Card> cards = new ArrayList<>();
 
     public Track(String id, String name, String color, String folder) {
@@ -65,6 +66,10 @@ public final class Track {
 
     public List<CardType> types() {
         return types;
+    }
+
+    public List<Selection> selections() {
+        return selections;
     }
 
     public List<Card> cards() {

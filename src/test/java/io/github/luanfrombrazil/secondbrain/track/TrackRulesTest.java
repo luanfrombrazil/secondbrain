@@ -119,7 +119,7 @@ class TrackRulesTest {
     void firstTaskStartsTheCardUsingTheFirstOptionOfTheCategory() {
         Card a = card("a", "available");
         withTasks(a, true, false);
-        StateRules.reevaluate(track);
+        StateRules.tasksChanged(track, a);
         assertEquals("studying", state(a));
     }
 
@@ -127,18 +127,35 @@ class TrackRulesTest {
     void allTasksFinishTheCardAndUncheckingReopensIt() {
         Card a = card("a", "studying");
         withTasks(a, true, true);
-        StateRules.reevaluate(track);
+        StateRules.tasksChanged(track, a);
         assertEquals("done", state(a));
         a.property(TasksProperty.class).orElseThrow().tasks().set(0, new Task("x", false));
-        StateRules.reevaluate(track);
+        StateRules.tasksChanged(track, a);
         assertEquals("studying", state(a));
+    }
+
+    @Test
+    void cardForcedDoneBeforeAllTasksStaysDone() {
+        Card a = card("a", "done");
+        withTasks(a, true, false);
+        StateRules.reevaluate(track);
+        assertEquals("done", state(a));
+    }
+
+    @Test
+    void stateChosenByTheUserIsNotOverwrittenByTheRules() {
+        card("a", "available");
+        Card b = card("b", "available");
+        b.dependencies().add("a");
+        StateRules.reevaluate(track, b);
+        assertEquals("available", state(b));
     }
 
     @Test
     void cardWithNoTasksIsNotFinished() {
         Card a = card("a", "available");
         withTasks(a);
-        StateRules.reevaluate(track);
+        StateRules.tasksChanged(track, a);
         assertEquals("available", state(a));
     }
 

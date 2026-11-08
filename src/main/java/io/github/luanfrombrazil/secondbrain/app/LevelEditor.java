@@ -1,8 +1,17 @@
 package io.github.luanfrombrazil.secondbrain.app;
 
 import io.github.luanfrombrazil.secondbrain.card.Card;
+import io.github.luanfrombrazil.secondbrain.card.CardType;
+import io.github.luanfrombrazil.secondbrain.property.ProgressProperty;
+import io.github.luanfrombrazil.secondbrain.property.Properties;
+import io.github.luanfrombrazil.secondbrain.property.Property;
+import io.github.luanfrombrazil.secondbrain.property.SelectionProperty;
 import io.github.luanfrombrazil.secondbrain.property.StateProperty;
+import io.github.luanfrombrazil.secondbrain.property.TasksProperty;
+import io.github.luanfrombrazil.secondbrain.property.TasksProperty.Task;
+import io.github.luanfrombrazil.secondbrain.property.TextProperty;
 import io.github.luanfrombrazil.secondbrain.track.Connections;
+import io.github.luanfrombrazil.secondbrain.track.Selection;
 import io.github.luanfrombrazil.secondbrain.track.StateRules;
 import io.github.luanfrombrazil.secondbrain.track.Track;
 import io.github.luanfrombrazil.secondbrain.vault.Vault;
@@ -17,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
+import java.util.function.Consumer;
 
 /**
  * Applies the user's edits to one level of a track: saves them, runs the automatic state
@@ -31,7 +42,13 @@ public final class LevelEditor {
     private record StateValue(String option, String previous) {
     }
 
-    private record Edit(Step apply, Step revert, Map<StateProperty, StateValue> statesBefore) {
+    private record StoredProperty(String kind, Map<String, Object> data) {
+    }
+
+    /**
+     * @param chosenByUser a card whose state the user has just picked: the rules leave it alone
+     */
+    private record Edit(Step apply, Step revert, Map<Card, StateValue> statesBefore, Card chosenByUser) {
     }
 
     private final Vault vault;
@@ -43,7 +60,7 @@ public final class LevelEditor {
     public LevelEditor(Vault vault, Track track) throws IOException {
         this.vault = vault;
         this.track = track;
-        saveRuleChanges();
+        saveRuleChanges(null);
     }
 
     public Track track() {
@@ -77,7 +94,7 @@ public final class LevelEditor {
                     }
                 },
                 () -> vault.deleteCard(track, owner, created[0]),
-                snapshot()));
+                snapshot(), null));
         return created[0];
     }
 
@@ -103,7 +120,7 @@ public final class LevelEditor {
                     dependent.setFixedPoint(dependentPoint);
                     vault.saveCards(track, touched);
                 },
-                snapshot()));
+                snapshot(), null));
         return true;
     }
 
@@ -128,8 +145,83 @@ public final class LevelEditor {
                     dependents.forEach(c -> c.dependencies().add(id));
                     vault.saveCards(track, dependents);
                 },
-                snapshot()));
+                snapshot(), null));
         return true;
+    }
+
+    public void setTitle(Card card, String title) throws IOException {
+        editCard(card, c -> c.setTitle(title), false);
+    }
+
+    public void setType(Card card, String typeId) throws IOException {
+        editCard(card, c -> c.setTypeId(typeId), false);
+    }
+
+    /** @param optionId the new state, or null for a card with no state */
+    public void setState(Card card, String optionId) throws IOException {
+        editCard(card, c -> {
+            c.properties().removeIf(StateProperty.class::isInstance);
+            if (optionId != null) {
+                c.properties().add(new StateProperty(optionId));
+            }
+        }, true);
+    }
+
+    public void setProgressShown(Card card, boolean shown) throws IOException {
+        editCard(card, c -> {
+            c.properties().removeIf(ProgressProperty.class::isInstance);
+            if (shown) {
+                c.properties().add(new ProgressProperty());
+            }
+        }, false);
+    }
+
+    public void addTask(Card card, String text) throws IOException {
+        editTasks(card, tasks -> tasks.add(new Task(text, false)));
+    }
+
+    public void setTaskDone(Card card, int index, boolean done) throws IOException {
+        editTasks(card, tasks -> tasks.set(index, new Task(tasks.get(index).text(), done)));
+    }
+
+    public void removeTask(Card card, int index) throws IOException {
+        editTasks(card, tasks -> tasks.remove(index));
+    }
+
+    public void addText(Card card, String name, String value) throws IOException {
+        editCard(card, c -> c.properties().add(new TextProperty(name, value)), false);
+    }
+
+    public void removeProperty(Card card, Property property) throws IOException {
+        int index = card.properties().indexOf(property);
+        editCard(card, c -> c.properties().remove(index), false);
+    }
+
+    /** @param optionId the chosen option, or null to clear this selection on the card */
+    public void setSelection(Card card, String selectionId, String optionId) throws IOException {
+        editCard(card, c -> {
+            c.properties().removeIf(p -> p instanceof SelectionProperty s && s.selectionId().equals(selectionId));
+            if (optionId != null) {
+                c.properties().add(new SelectionProperty(selectionId, optionId));
+            }
+        }, false);
+    }
+
+    public CardType createType(String name) throws IOException {
+        CardType type = new CardType(UUID.randomUUID().toString(), name, "", List.of());
+        track.types().add(type);
+        vault.saveTrack(track);
+        return type;
+    }
+
+    public Selection createSelection(String name, List<String> optionNames) throws IOException {
+        List<Selection.Option> options = optionNames.stream()
+                .map(option -> new Selection.Option(UUID.randomUUID().toString(), option))
+                .toList();
+        Selection selection = new Selection(UUID.randomUUID().toString(), name, options);
+        track.selections().add(selection);
+        vault.saveTrack(track);
+        return selection;
     }
 
     public boolean undo() throws IOException {
@@ -137,7 +229,7 @@ public final class LevelEditor {
             return false;
         }
         Edit edit = undoStack.pop();
-        Map<StateProperty, StateValue> current = snapshot();
+        Map<Card, StateValue> current = snapshot();
         edit.revert().run();
         restore(edit.statesBefore());
         saveStatesThatDiffer(current);
@@ -151,42 +243,75 @@ public final class LevelEditor {
         }
         Edit edit = redoStack.pop();
         edit.apply().run();
-        saveRuleChanges();
+        saveRuleChanges(edit.chosenByUser());
         undoStack.push(edit);
         return true;
     }
 
+    private void editTasks(Card card, Consumer<List<Task>> change) throws IOException {
+        editCard(card, c -> {
+            TasksProperty tasks = c.property(TasksProperty.class).orElseGet(() -> {
+                TasksProperty created = new TasksProperty();
+                c.properties().add(created);
+                return created;
+            });
+            change.accept(tasks.tasks());
+            StateRules.tasksChanged(track, c);
+        }, false);
+    }
+
+    private void editCard(Card card, Consumer<Card> change, boolean stateChosenByUser) throws IOException {
+        String title = card.title();
+        String typeId = card.typeId();
+        List<StoredProperty> properties = new ArrayList<>();
+        card.properties().forEach(p -> properties.add(new StoredProperty(p.kind(), p.toData())));
+        List<Card> touched = List.of(card);
+        perform(new Edit(
+                () -> {
+                    change.accept(card);
+                    vault.saveCards(track, touched);
+                },
+                () -> {
+                    card.setTitle(title);
+                    card.setTypeId(typeId);
+                    card.properties().clear();
+                    properties.forEach(p -> Properties.fromData(p.kind(), p.data()).ifPresent(card.properties()::add));
+                    vault.saveCards(track, touched);
+                },
+                snapshot(), stateChosenByUser ? card : null));
+    }
+
     private void perform(Edit edit) throws IOException {
         edit.apply().run();
-        saveRuleChanges();
+        saveRuleChanges(edit.chosenByUser());
         undoStack.push(edit);
         redoStack.clear();
     }
 
-    private void saveRuleChanges() throws IOException {
+    private void saveRuleChanges(Card chosenByUser) throws IOException {
         Set<Card> changed = new HashSet<>();
-        StateRules.reevaluate(track).forEach(change -> changed.add(change.card()));
+        StateRules.reevaluate(track, chosenByUser).forEach(change -> changed.add(change.card()));
         vault.saveCards(track, changed);
     }
 
-    private Map<StateProperty, StateValue> snapshot() {
-        Map<StateProperty, StateValue> values = new HashMap<>();
+    private Map<Card, StateValue> snapshot() {
+        Map<Card, StateValue> values = new HashMap<>();
         forEachCard(track.cards(), card -> card.property(StateProperty.class).ifPresent(
-                state -> values.put(state, new StateValue(state.optionId(), state.previousOptionId()))));
+                state -> values.put(card, new StateValue(state.optionId(), state.previousOptionId()))));
         return values;
     }
 
-    private static void restore(Map<StateProperty, StateValue> values) {
-        values.forEach((state, value) -> {
+    private static void restore(Map<Card, StateValue> values) {
+        values.forEach((card, value) -> card.property(StateProperty.class).ifPresent(state -> {
             state.setOptionId(value.option());
             state.setPreviousOptionId(value.previous());
-        });
+        }));
     }
 
-    private void saveStatesThatDiffer(Map<StateProperty, StateValue> before) throws IOException {
+    private void saveStatesThatDiffer(Map<Card, StateValue> before) throws IOException {
         List<Card> changed = new ArrayList<>();
         forEachCard(track.cards(), card -> card.property(StateProperty.class).ifPresent(state -> {
-            StateValue old = before.get(state);
+            StateValue old = before.get(card);
             if (old == null || !Objects.equals(old.option(), state.optionId())
                     || !Objects.equals(old.previous(), state.previousOptionId())) {
                 changed.add(card);
@@ -195,7 +320,7 @@ public final class LevelEditor {
         vault.saveCards(track, changed);
     }
 
-    private static void forEachCard(List<Card> level, java.util.function.Consumer<Card> action) {
+    private static void forEachCard(List<Card> level, Consumer<Card> action) {
         for (Card card : level) {
             action.accept(card);
             forEachCard(card.innerCards(), action);

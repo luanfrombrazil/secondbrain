@@ -22,42 +22,57 @@ public final class StateRules {
     private StateRules() {
     }
 
-    /** Applies the rules to the whole track and returns what changed. */
+    /** The dependency rules for the whole track. Same as {@link #reevaluate(Track, Card)} with no exception. */
     public static List<Change> reevaluate(Track track) {
+        return reevaluate(track, null);
+    }
+
+    /**
+     * Applies the dependency rules and returns what changed.
+     *
+     * @param chosenByUser a card whose state the user has just picked: it stays as chosen, or null
+     */
+    public static List<Change> reevaluate(Track track, Card chosenByUser) {
         List<Change> changes = new ArrayList<>();
-        applyProgress(track, track.cards(), changes);
-        applyBlocking(track, track.cards(), false, changes);
+        applyBlocking(track, track.cards(), false, chosenByUser, changes);
         return changes;
     }
 
-    private static void applyProgress(Track track, List<Card> level, List<Change> changes) {
-        for (Card card : level) {
-            applyProgress(track, card.innerCards(), changes);
-            Optional<StateProperty> state = card.property(StateProperty.class);
-            Optional<TasksProperty> tasks = card.property(TasksProperty.class);
-            if (state.isEmpty() || tasks.isEmpty() || tasks.get().tasks().isEmpty()
-                    || card.property(ProgressProperty.class).isEmpty()) {
-                continue;
-            }
-            Category category = categoryOf(track, state.get());
-            int done = tasks.get().doneCount();
-            int total = tasks.get().tasks().size();
-            if (category == Category.AVAILABLE && done > 0 && done < total) {
-                moveTo(track, card, state.get(), Category.IN_PROGRESS, changes);
-            } else if ((category == Category.AVAILABLE || category == Category.IN_PROGRESS) && done == total) {
-                moveTo(track, card, state.get(), Category.DONE, changes);
-            } else if (category == Category.DONE && done < total) {
-                moveTo(track, card, state.get(), Category.IN_PROGRESS, changes);
-            }
+    /**
+     * The checklist of this card changed: the first task starts it, the last one finishes it,
+     * and unchecking reopens it. This only runs on a change, so a card the user forced to
+     * Done before 100% stays Done.
+     */
+    public static List<Change> tasksChanged(Track track, Card card) {
+        List<Change> changes = new ArrayList<>();
+        Optional<StateProperty> state = card.property(StateProperty.class);
+        Optional<TasksProperty> tasks = card.property(TasksProperty.class);
+        if (state.isEmpty() || tasks.isEmpty() || card.property(ProgressProperty.class).isEmpty()) {
+            return changes;
         }
+        Category category = categoryOf(track, state.get());
+        int done = tasks.get().doneCount();
+        int total = tasks.get().tasks().size();
+        if (total == 0) {
+            return changes;
+        }
+        if ((category == Category.AVAILABLE || category == Category.IN_PROGRESS) && done == total) {
+            moveTo(track, card, state.get(), Category.DONE, changes);
+        } else if (category == Category.AVAILABLE && done > 0) {
+            moveTo(track, card, state.get(), Category.IN_PROGRESS, changes);
+        } else if (category == Category.DONE && done < total) {
+            moveTo(track, card, state.get(), Category.IN_PROGRESS, changes);
+        }
+        return changes;
     }
 
-    private static void applyBlocking(Track track, List<Card> level, boolean parentBlocked, List<Change> changes) {
+    private static void applyBlocking(Track track, List<Card> level, boolean parentBlocked, Card chosenByUser,
+                                      List<Change> changes) {
         Map<String, Card> byId = new HashMap<>();
         level.forEach(card -> byId.put(card.id(), card));
         for (Card card : level) {
             boolean blocked = parentBlocked || hasPendingDependency(track, card, byId);
-            card.property(StateProperty.class).ifPresent(state -> {
+            card.property(StateProperty.class).filter(state -> card != chosenByUser).ifPresent(state -> {
                 Category category = categoryOf(track, state);
                 if (blocked && (category == Category.AVAILABLE || category == Category.IN_PROGRESS)) {
                     String previous = state.optionId();
@@ -68,7 +83,7 @@ public final class StateRules {
                     release(track, card, state, changes);
                 }
             });
-            applyBlocking(track, card.innerCards(), blocked, changes);
+            applyBlocking(track, card.innerCards(), blocked, chosenByUser, changes);
         }
     }
 

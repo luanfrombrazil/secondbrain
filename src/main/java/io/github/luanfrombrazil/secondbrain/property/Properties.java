@@ -11,7 +11,8 @@ public final class Properties {
             StateProperty.KIND, StateProperty::fromData,
             TasksProperty.KIND, TasksProperty::fromData,
             ProgressProperty.KIND, data -> new ProgressProperty(),
-            TextProperty.KIND, TextProperty::fromData);
+            TextProperty.KIND, TextProperty::fromData,
+            SelectionProperty.KIND, SelectionProperty::fromData);
 
     private Properties() {
     }
