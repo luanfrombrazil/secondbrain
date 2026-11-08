@@ -41,6 +41,8 @@ public final class GraphRenderer {
     private static final double NOTE_HEIGHT = 40;
 
     private static final double HANDLE_HIT_RADIUS = 12;
+    private static final double SKIP_ARC_LIFT = 200;
+    private static final double SKIP_ARC_REACH = 0.12;
     /** The line stops this fraction of the head length before the tip, just inside the head. */
     private static final double LINE_STOP = 0.8;
     // With few cards on screen every curve is smooth; quality drops gradually as the count grows.
@@ -361,9 +363,15 @@ public final class GraphRenderer {
             return;
         }
 
-        double gap = Math.max(30 * c.scale(), (x2 - x1) / 2);
+        // A connection that skips columns arcs over the cards in between instead of passing behind them.
+        boolean skipsColumns = t.graph.layer(a.target()) - t.graph.layer(a.source()) >= 2
+                && Math.abs(y2 - y1) < Node.HEIGHT * c.scale();
+        double gap = skipsColumns
+                ? (x2 - x1) * SKIP_ARC_REACH
+                : Math.max(30 * c.scale(), (x2 - x1) / 2);
+        double lift = skipsColumns ? SKIP_ARC_LIFT * c.scale() : 0;
         double[] xs = {x1, x1 + gap, x2 - gap, x2};
-        double[] ys = {y1, y1, y2, y2};
+        double[] ys = {y1, y1 - lift, y2 - lift, y2};
         double[] lineX = subcurve(xs, parameterAtDistance(xs, ys, lineEnd));
         double[] lineY = subcurve(ys, parameterAtDistance(xs, ys, lineEnd));
 

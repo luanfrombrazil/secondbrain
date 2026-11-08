@@ -46,6 +46,7 @@ class MainViewScreenshotTest {
                     MainView view = new MainView(vault);
                     Scene scene = new Scene(view, 1500, 900);
                     scene.getStylesheets().add(MainView.class.getResource("secondbrain.css").toExternalForm());
+                    view.connect(second.id(), third.id());
                     view.connect(first.id(), third.id());
                     view.openCard(first.id());
                     view.applyCss();
@@ -59,7 +60,7 @@ class MainViewScreenshotTest {
                 }
             });
             done.get(60, TimeUnit.SECONDS);
-            assertEquals(1, third.dependencies().size());
+            assertEquals(2, third.dependencies().size());
         }
     }
 
