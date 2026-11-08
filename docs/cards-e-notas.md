@@ -2,78 +2,92 @@
 
 ## Tipos de card
 
-| Tipo | Progresso | Exemplo |
-|---|---|---|
-| Disciplina | Sim, ligado a uma disciplina da graduação | Cálculo II, ligado a 04/2 |
-| Estudo independente | Sim, próprio | Um curso de Rust |
-| Estudo pontual | Não | Um artigo lido, com as suas notas |
-| Projeto | Opcional | Um repositório git |
+Um tipo é um **preset inicial**, criado pelo usuário, com:
+
+- um **nome**, o rótulo do tipo;
+- um **ícone**, que aparece no rodapé dos cards desse tipo;
+- um **conjunto de propriedades** que o card recebe ao ser criado.
+
+O nome e o ícone são compartilhados pelos cards do tipo. As propriedades, não: depois de criado, cada card tem as suas.
+
+- **Qualquer card** pode ganhar propriedades novas a qualquer momento.
+- **Trocar o tipo** muda só o nome e o ícone. As propriedades do card continuam as mesmas.
+- **Editar um tipo** vale só para os cards criados depois. Os que já existem não mudam.
+
+Exemplos:
+
+| Tipo       | Ícone               | Propriedades                                               |
+| ---------- | ------------------- | ---------------------------------------------------------- |
+| Disciplina | Chapéu de formatura | Período, bibliografia, vídeos, tarefas, barra de progresso |
+| Curso      | Play                | Plataforma, vídeos, tarefas, barra de progresso            |
+| Artigo     | Folha               | Autores, DOI, PDF                                          |
+| Projeto    | Ramificação do git  | Repositório, tarefas                                       |
 
 ## Estrutura do card
 
 Inspirada nas caixas de um diagrama de classes, com compartimentos separados por linhas:
 
 1. **Faixa de estado** no topo (azul, amarelo, vermelho ou verde).
-2. **Cabeçalho:** o título, mais os botões **maximizar** (abre a trilha interna) e **expandir** (mostra informações extras).
-3. **Tarefas:** o checklist. As concluídas ficam marcadas e riscadas.
-4. **Rodapé:** barra de progresso com a contagem (5/9) e o vínculo (ícone de disciplina e código 04/2).
+2. **Cabeçalho:** o título, mais os botões **maximizar** (abre o grafo interno) e **expandir** (mostra todas as propriedades).
+3. **Tarefas:** o checklist, se o card tiver essa propriedade. As concluídas ficam marcadas e riscadas.
+4. **Rodapé:** a barra de progresso com a contagem (5/9), se o card tiver essa propriedade, e o ícone do tipo.
 
-**Ao expandir,** aparecem entre as tarefas e o rodapé:
+**Progresso:** soma as tarefas concluídas e os cards concluídos do grafo interno. Ao chegar a 100%, o card fica **Concluído** sozinho.
+
+**Ao expandir,** todas as propriedades do card aparecem entre as tarefas e o rodapé. Por exemplo:
 
 - **Bibliografia:** os livros escolhidos para a disciplina ou o módulo.
 - **Vídeos:** links do YouTube, com miniatura 16:9, título e duração.
 - **Relacionados:** o que está ligado ao card mas não faz parte dele, como livros avulsos e repositórios git.
 
-**Visual:** cards opacos (nunca translúcidos), uma sombra branca bem leve para contrastar com o fundo quadriculado, e a borda azul quando o card está selecionado.
+**Visual:** cards opacos, uma sombra branca bem leve para contrastar com o fundo quadriculado, e a borda quando o card está selecionado.
 
-## Trilha interna (card maximizado)
+## Grafo interno (card maximizado)
 
 - O botão maximizar abre um **modal** com um espaço quadriculado próprio.
-- **Os cards internos são exatamente iguais aos de fora.** É uma trilha dentro da trilha. Em Cálculo II: Funções de várias variáveis → Limites → Derivadas parciais → (Gradiente, Máximos e mínimos → Lagrange, Integrais duplas → Integrais triplas e Coordenadas polares).
-- Os cards internos que não têm trilha própria não mostram o botão maximizar. No componente, isso é a propriedade **Maximizar**.
-- O espaço interno também aceita **notas** e **arquivos**, ligados aos cards por conexões fracas.
-- Um menu **Exibição** no topo tem interruptores para links fracos, dependências, notas, arquivos, concluídos e bloqueados, mais a ação **Auto-organizar**.
+- **Os cards internos são exatamente iguais aos de fora.** É um grafo dentro do card. Em Cálculo II: Funções de várias variáveis → Limites → Derivadas parciais → (Gradiente, Máximos e mínimos → Lagrange, Integrais duplas → Integrais triplas e Coordenadas polares).
+- Os cards internos que não têm grafo próprio não mostram o botão maximizar.
+- O espaço interno também aceita **notas** e **arquivos**, ligados aos cards por links.
+- Um menu **Exibição** no topo tem interruptores para links, conexões, notas, arquivos, concluídos e bloqueados, e os concluídos normais, apagados ou ocultos. A posição dos cards vem sempre da disposição.
 
 ## Nota principal e notas internas
 
-- O modal alterna entre **Nota** e **Trilha**.
+- O modal alterna entre **Nota** e **Grafo**.
 - **Cálculo II** tem uma **nota global principal**.
 - **Clicar num card interno** abre a nota dele. Uma **seta de voltar** leva à nota principal, e o caminho completo aparece no topo (Engenharia de Computação › Cálculo II › Derivadas parciais).
 - O progresso mostrado no topo é o do card aberto.
 
 ## Arquivos
 
-- O PDF é um **card comprido**, com uma prévia 9:16 da página, o nome e um botão de expandir.
-- **Expandido**, mostra tipo, tamanho, páginas, data em que foi adicionado e pasta.
+Cada tipo de arquivo tem a sua forma de exibição no grafo. Por exemplo:
 
-## Satélites e fantasmas
+- **PDF:** um **card comprido**, com uma prévia 9:16 da página, o nome e um botão de expandir. **Expandido**, mostra tipo, tamanho, páginas, data em que foi adicionado e pasta.
+- **EPUB:** o mesmo card comprido, com a capa no lugar da página. Abre no leitor do app, com o texto refluindo na largura, o sumário e a posição de leitura guardada.
 
-- **Satélites:** cards pequenos e pontuais (livro avulso, nota, PDF) que só aparecem no zoom próximo, ligados por conexões fracas.
-- **Card fantasma:** contorno tracejado, só com o título. Nasce de um link para uma nota que não existe ou de um card recém-criado sem conteúdo. Funciona como roadmap leve. Um clique materializa a nota.
+## Notas pontuais e fantasmas
+
+- **Notas pontuais:** cards sem propriedade especial, só texto ou uma anotação. Por terem peso baixo, só aparecem no zoom próximo, perto do card ligado a elas que está em foco.
+- **Notas fantasmas:** sugestões de novos cards, translúcidas e com contorno tracejado, só com o título. Aparecem ao lado do card quando a nota ganha uma divisão: `\section`, `\chapter` ou um título em Markdown. O botão tracejado **Criar card** transforma a fantasma num card do grafo interno, com uma nota própria para aprofundar aquela divisão; o **×** no topo recusa. A divisão continua na nota principal.
 
 ## Editor do card
 
 A solução para editar as informações da nota que não são texto.
 
-- **Abre no lugar do card**, com um clique duplo num card existente ou ao criar um card novo. O espaço desliza, e o painel ocupa o lugar do card.
+- **Abre no lugar do card**, sobre o grafo escurecido, com um clique duplo num card existente ou ao criar um card novo. **Pronto** ou Esc fecha.
 - **Conteúdo do painel:**
   - nome editável;
-  - tipo (Disciplina, Estudo, Pontual ou Projeto) e estado;
-  - disciplina vinculada (por exemplo, "04/2 · Cálculo com Funções de Várias Variáveis I"). O **título do card** é curto (Cálculo II) e independe do nome oficial;
-  - **tarefas**, com alça para reordenar, caixa para marcar, edição no lugar, data opcional, remover e "+ Adicionar tarefa";
+  - tipo e estado;
+  - as propriedades do card, com a opção de adicionar novas. O **título do card** pode ser curto (Cálculo II), e o nome completo, se houver, fica numa propriedade;
+  - **datas**, cada uma com nome, dia e hora opcional, e "+ Adicionar data";
+  - **tarefas**, com alça para reordenar, caixa para marcar, edição no lugar, remover e "+ Adicionar tarefa";
   - **bibliografia**, com a ★ para principal ou complementar, busca por título, autor, ISBN ou DOI, e resultados que mostram o que já está na lista;
   - **vídeos** (colar o link do YouTube) e **relacionados** (vincular nota, livro ou repositório);
   - rodapé com **Excluir card** (ou Descartar, no card novo) e **Pronto**.
 - **No card novo:** o título vem focado, a escolha do tipo aparece em destaque e as seções vêm vazias.
 - **Com o PDF:** o PDF da nota aparece à direita, com abas para editar o LaTeX, abrir em página dupla ou recolher.
+- **Nota Markdown:** o editor `.md` à esquerda e o papel à direita, feito de HTML no WebView e atualizado a cada pausa, sem compilação. Clique duplo no papel leva o cursor ao trecho correspondente.
 - **Interface única:** editor do card à esquerda, editor `.tex` no centro e PDF à direita, tudo na mesma tela.
 
-## Onde as informações moram (em aberto)
+## Bibliografia
 
-Como o `.tex` só pode ter LaTeX padrão (ver [LaTeX](latex.md)), as opções são:
-
-1. **Convenção com LaTeX padrão no próprio `.tex`:** o checklist como `itemize` numa seção Tarefas, e a bibliografia vinda do `\cite`/`\nocite` com um `.bib` ao lado. Aparece no PDF.
-2. **Arquivo de ficha ao lado** do `.tex`, editado só pela interface.
-3. **Comentários `%` no topo do `.tex`:** invisíveis no PDF e ignorados por qualquer compilador.
-
-A bibliografia pode ser uma **biblioteca única por trilha** (um livro usado em várias disciplinas existe uma vez só), com a escolha principal ou complementar feita por nota.
+Cada trilha tem uma **biblioteca única**: um livro usado em vários cards existe uma vez só. Cada card escolhe da biblioteca os seus livros, marcando-os como principais ou complementares.
