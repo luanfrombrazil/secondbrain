@@ -37,3 +37,42 @@
 .text-field {
     -fx-prompt-text-fill: #8d93a3;
 }
+
+.tex-code {
+    -fx-font-family: "JetBrains Mono", "Consolas", monospace;
+    -fx-font-size: 13px;
+    -fx-background-color: #1b1c20;
+}
+
+.tex-code .text {
+    -fx-fill: #e6e7ea;
+}
+
+.tex-code .lineno {
+    -fx-background-color: #1b1c20;
+    -fx-text-fill: #70757f;
+}
+
+.tex-code .caret {
+    -fx-stroke: #e6e7ea;
+}
+
+.tex-code .tex-command {
+    -fx-fill: #e8a25c;
+}
+
+.tex-code .tex-environment {
+    -fx-fill: #5cc7bd;
+}
+
+.tex-code .tex-math {
+    -fx-fill: #7fce7f;
+}
+
+.tex-code .tex-comment {
+    -fx-fill: #70757f;
+}
+
+.tex-error-line {
+    -fx-background-color: #4a2424;
+}

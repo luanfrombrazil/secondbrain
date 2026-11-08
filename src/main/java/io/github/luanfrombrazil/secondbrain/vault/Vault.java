@@ -14,6 +14,7 @@ import io.github.luanfrombrazil.secondbrain.track.Track;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.Files;
@@ -103,7 +104,7 @@ public final class Vault implements AutoCloseable {
         Files.createDirectories(folder);
         String slug = Slug.unique(title, s -> Files.exists(folder.resolve(s + ".tex")));
         Path note = folder.resolve(slug + ".tex");
-        Files.createFile(note);
+        Files.writeString(note, noteTemplate(track, title), StandardCharsets.UTF_8);
 
         Card card = new Card(UUID.randomUUID().toString(), title, root.relativize(note).toString().replace('\\', '/'));
         track.firstOption(StateOption.Category.AVAILABLE)
@@ -122,6 +123,7 @@ public final class Vault implements AutoCloseable {
         data.put("name", track.name());
         data.put("color", track.color());
         data.put("folder", track.folder());
+        data.put("preamble", track.preamble());
         data.put("states", track.states().stream().map(Vault::optionData).toList());
         data.put("types", track.types().stream().map(Vault::typeData).toList());
         data.put("selections", track.selections().stream().map(Vault::selectionData).toList());
@@ -167,10 +169,24 @@ public final class Vault implements AutoCloseable {
         }
         Path note = root.resolve(card.notePath());
         byte[] content = Files.exists(note) ? Files.readAllBytes(note) : new byte[0];
-        moveToTrash(note, content.length);
+        boolean untouched = new String(content, StandardCharsets.UTF_8).equals(noteTemplate(track, card.title()));
+        moveToTrash(note, untouched ? 0 : content.length);
         level(track, parent).remove(card);
         Files.deleteIfExists(cardFile(card.id()));
         return content;
+    }
+
+    private static String noteTemplate(Track track, String title) {
+        return track.preamble() + "\n\\title{" + title + "}\n\\author{}\n\n\\begin{document}\n\\maketitle\n\n\n\\end{document}\n";
+    }
+
+    public Path notePath(Card card) {
+        return root.resolve(card.notePath());
+    }
+
+    /** Where this card's compiled PDF lives. It only leaves the cache on export (D-53). */
+    public Path cacheFolder(Card card) {
+        return root.resolve(APP_FOLDER).resolve("cache").resolve(card.id());
     }
 
     /** Puts a deleted card back, with its note. */
@@ -274,6 +290,9 @@ public final class Vault implements AutoCloseable {
     private static Track readTrack(Map<String, Object> data) {
         Track track = new Track((String) data.get("id"), (String) data.get("name"),
                 (String) data.get("color"), (String) data.get("folder"));
+        if (data.get("preamble") instanceof String preamble) {
+            track.setPreamble(preamble);
+        }
         for (Map<String, Object> state : (List<Map<String, Object>>) data.getOrDefault("states", List.of())) {
             track.states().add(new StateOption((String) state.get("id"), (String) state.get("name"),
                     (String) state.get("color"), StateOption.Category.valueOf((String) state.get("category"))));

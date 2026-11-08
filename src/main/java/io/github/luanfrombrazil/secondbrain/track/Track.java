@@ -10,10 +10,13 @@ import java.util.Optional;
 /** A root graph of cards, with its own states, types and color. Inner graphs are not tracks (D-54). */
 public final class Track {
 
+    public static final String DEFAULT_PREAMBLE = "\\documentclass{article}\n\\usepackage{amsmath}\n\\usepackage{hyperref}\n";
+
     private final String id;
     private String name;
     private String color;
     private final String folder;
+    private String preamble = DEFAULT_PREAMBLE;
     private final List<StateOption> states = new ArrayList<>();
     private final List<CardType> types = new ArrayList<>();
     private final List<Selection> selections = new ArrayList<>();
@@ -58,6 +61,15 @@ public final class Track {
     /** The track's folder, relative to the vault. */
     public String folder() {
         return folder;
+    }
+
+    /** The start of every new note of this track (D-55). */
+    public String preamble() {
+        return preamble;
+    }
+
+    public void setPreamble(String preamble) {
+        this.preamble = preamble;
     }
 
     public List<StateOption> states() {

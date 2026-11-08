@@ -40,6 +40,8 @@ final class CardEditorPane extends ScrollPane {
         void close();
 
         void openInnerGraph(Card card);
+
+        void openNote(Card card);
     }
 
     private interface Change {
@@ -87,7 +89,9 @@ final class CardEditorPane extends ScrollPane {
         close.setOnAction(e -> host.close());
         Button inner = new Button("Grafo interno");
         inner.setOnAction(e -> host.openInnerGraph(card));
-        box.getChildren().add(new HBox(6, close, inner));
+        Button note = new Button("Nota");
+        note.setOnAction(e -> host.openNote(card));
+        box.getChildren().add(new HBox(6, close, inner, note));
 
         title("Título");
         TextField titleField = new TextField(card.title());

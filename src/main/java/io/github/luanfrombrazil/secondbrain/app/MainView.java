@@ -8,6 +8,7 @@ import io.github.luanfrombrazil.secondbrain.graph.view.GraphView;
 import io.github.luanfrombrazil.secondbrain.graph.view.ViewParameters;
 import io.github.luanfrombrazil.secondbrain.graph.view.backdrop.Backdrop;
 import io.github.luanfrombrazil.secondbrain.graph.view.backdrop.Backdrops;
+import io.github.luanfrombrazil.secondbrain.note.NoteEditorPane;
 import io.github.luanfrombrazil.secondbrain.track.Track;
 import io.github.luanfrombrazil.secondbrain.vault.Vault;
 import javafx.geometry.Insets;
@@ -62,6 +63,7 @@ final class MainView extends BorderPane implements GraphEditor {
     private final TextField newTrackName = new TextField();
     private LevelEditor editor;
     private CardEditorPane cardEditor;
+    private NoteEditorPane noteEditor;
 
     MainView(Vault vault) throws IOException {
         this.vault = vault;
@@ -287,6 +289,11 @@ final class MainView extends BorderPane implements GraphEditor {
                 }
 
                 @Override
+                public void openNote(Card card) {
+                    openNoteEditor(card);
+                }
+
+                @Override
                 public void openInnerGraph(Card card) {
                     closeCardEditor();
                     editor.open(card);
@@ -295,6 +302,24 @@ final class MainView extends BorderPane implements GraphEditor {
             });
             setRight(cardEditor);
         });
+    }
+
+    private void openNoteEditor(Card card) {
+        attempt(() -> {
+            closeNoteEditor();
+            noteEditor = new NoteEditorPane(vault.notePath(card), vault.cacheFolder(card), this::closeNoteEditor);
+            noteEditor.setPrefWidth(getWidth() * 0.55);
+            setRight(noteEditor);
+            cardEditor = null;
+        });
+    }
+
+    private void closeNoteEditor() {
+        if (noteEditor != null) {
+            noteEditor.saveNow();
+            noteEditor = null;
+            setRight(null);
+        }
     }
 
     private void closeCardEditor() {

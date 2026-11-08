@@ -83,6 +83,7 @@ public final class LevelEditor {
     public Card createCard(String title, double[] fixedPoint) throws IOException {
         Card owner = parent;
         Card[] created = new Card[1];
+        byte[][] note = new byte[1][];
         perform(new Edit(
                 () -> {
                     if (created[0] == null) {
@@ -90,10 +91,10 @@ public final class LevelEditor {
                         created[0].setFixedPoint(fixedPoint);
                         vault.saveCard(track, created[0], owner);
                     } else {
-                        vault.restoreCard(track, owner, created[0], new byte[0]);
+                        vault.restoreCard(track, owner, created[0], note[0]);
                     }
                 },
-                () -> vault.deleteCard(track, owner, created[0]),
+                () -> note[0] = vault.deleteCard(track, owner, created[0]),
                 snapshot(), null));
         return created[0];
     }
