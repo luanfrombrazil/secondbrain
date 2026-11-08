@@ -40,6 +40,10 @@ final class GraphRenderer {
     private static final double NOTE_HEIGHT = 40;
 
     private static final double HANDLE_HIT_RADIUS = 12;
+    private static final Color[] TUBE_COLORS = {
+            Color.web("#2b2f38"), Color.web("#5a616e"), Color.web("#98a1af"), Color.web("#f2f4f8")};
+    private static final double[] TUBE_WIDTHS = {1, 0.8, 0.52, 0.2};
+    private static final double TUBE_HIGHLIGHT_SHIFT = 0.2;
     /** The line stops this fraction of the head length before the tip, just inside the head. */
     private static final double LINE_STOP = 0.8;
     // With few cards on screen every curve is smooth; quality drops gradually as the count grows.
@@ -428,9 +432,9 @@ final class GraphRenderer {
         if (!curved) {
             double length = Math.max(1, Math.hypot(x2 - x1, y2 - y1));
             double keep = Math.max(0, 1 - lineEnd / length);
-            g.strokeLine(x1, y1, x1 + (x2 - x1) * keep, y1 + (y2 - y1) * keep);
+            strokeShaft(t, g, () -> g.strokeLine(x1, y1, x1 + (x2 - x1) * keep, y1 + (y2 - y1) * keep));
             if (!fromCenters) {
-                drawArrowhead(g, x1, y1, x2, y2, head);
+                drawHead(t, g, x1, y1, x2, y2, head);
             }
             return;
         }
@@ -448,18 +452,56 @@ final class GraphRenderer {
         if (!smooth) {
             int segments = (int) Math.round(MAX_LINE_SEGMENTS
                     - (MAX_LINE_SEGMENTS - minLineSegments) * Math.min(1, fromCenter));
-            strokeCurveAsLines(g, lineX[0], lineY[0], lineX[1], lineY[1], lineX[2], lineY[2], lineX[3], lineY[3], segments);
+            strokeShaft(t, g, () -> strokeCurveAsLines(g, lineX[0], lineY[0], lineX[1], lineY[1],
+                    lineX[2], lineY[2], lineX[3], lineY[3], segments));
         } else {
             smoothCurvesLeft--;
-            g.beginPath();
-            g.moveTo(lineX[0], lineY[0]);
-            g.bezierCurveTo(lineX[1], lineY[1], lineX[2], lineY[2], lineX[3], lineY[3]);
-            g.stroke();
+            strokeShaft(t, g, () -> {
+                g.beginPath();
+                g.moveTo(lineX[0], lineY[0]);
+                g.bezierCurveTo(lineX[1], lineY[1], lineX[2], lineY[2], lineX[3], lineY[3]);
+                g.stroke();
+            });
         }
         if (!fromCenters) {
             // The head points along the curve as it enters the head, not along the final tangent.
             double atBase = parameterAtDistance(xs, ys, head);
-            drawArrowhead(g, subcurve(xs, atBase)[3], subcurve(ys, atBase)[3], x2, y2, head);
+            drawHead(t, g, subcurve(xs, atBase)[3], subcurve(ys, atBase)[3], x2, y2, head);
+        }
+    }
+
+    /** Experiment: the same line stroked several times, narrower and lighter, reads as a metal tube. */
+    private void strokeShaft(GraphView t, GraphicsContext g, Runnable stroke) {
+        if (!t.metalTube) {
+            stroke.run();
+            return;
+        }
+        double width = g.getLineWidth();
+        for (int i = 0; i < TUBE_COLORS.length; i++) {
+            double shift = -width * TUBE_HIGHLIGHT_SHIFT * i / (TUBE_COLORS.length - 1);
+            g.setStroke(TUBE_COLORS[i]);
+            g.setLineWidth(width * TUBE_WIDTHS[i]);
+            g.translate(0, shift);
+            stroke.run();
+            g.translate(0, -shift);
+        }
+    }
+
+    private void drawHead(GraphView t, GraphicsContext g, double fromX, double fromY, double x, double y, double size) {
+        if (!t.metalTube) {
+            drawArrowhead(g, fromX, fromY, x, y, size);
+            return;
+        }
+        double length = Math.max(1, Math.hypot(x - fromX, y - fromY));
+        double ux = (x - fromX) / length;
+        double uy = (y - fromY) / length;
+        for (int i = 0; i < TUBE_COLORS.length; i++) {
+            double scale = TUBE_WIDTHS[i];
+            double inset = size * (1 - scale) * 0.45;
+            double tipX = x - ux * inset;
+            double tipY = y - uy * inset - size * TUBE_HIGHLIGHT_SHIFT * 0.3 * i / (TUBE_COLORS.length - 1);
+            g.setFill(TUBE_COLORS[i]);
+            drawArrowhead(g, fromX, fromY, tipX, tipY, size * scale);
         }
     }
 

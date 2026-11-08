@@ -69,6 +69,7 @@ public final class GraphView extends Region {
     private double focusAnchorY = Double.NaN;
     private String followed;
     private boolean frameWhenSettled;
+    boolean metalTube;
     String connectingFrom;
     String dropTarget;
     double mouseX;
@@ -229,6 +230,11 @@ public final class GraphView extends Region {
 
     Parameters parameters() {
         return parameters;
+    }
+
+    public void setMetalTube(boolean value) {
+        metalTube = value;
+        dirty = true;
     }
 
     public LayoutType layoutType() {

@@ -132,6 +132,10 @@ public final class GraphLab extends BorderPane {
         });
 
 
+        CheckBox tube = new CheckBox("Tubo metálico (teste)");
+        tube.selectedProperty().addListener((o, a, value) -> view.setMetalTube(value));
+        controls.getChildren().add(tube);
+
         title("Zoom semântico (escala de cada troca)");
         String[] names = {"Bolinha → miniatura", "Miniatura → afastado", "Afastado → médio", "Médio → próximo"};
         for (int i = 0; i < names.length; i++) {
