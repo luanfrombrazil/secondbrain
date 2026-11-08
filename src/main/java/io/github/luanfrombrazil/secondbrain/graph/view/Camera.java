@@ -53,12 +53,6 @@ public final class Camera {
         targetDy += deltaY;
     }
 
-    /** Moves the view by this many screen pixels, easing there. */
-    public void panSmoothly(double deltaX, double deltaY) {
-        targetDx += deltaX;
-        targetDy += deltaY;
-    }
-
     public void frame(double minX, double minY, double maxX, double maxY, double width, double height) {
         double margin = 60;
         double scaleX = (width - 2 * margin) / Math.max(1, maxX - minX);

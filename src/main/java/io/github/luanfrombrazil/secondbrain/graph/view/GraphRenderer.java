@@ -324,12 +324,30 @@ final class GraphRenderer {
             if (o == null || d == null || segmentOffScreen(c, o, d, width, height)) {
                 continue;
             }
+            double opacity = t.level.compareTo(ZoomLevel.MEDIUM) < 0 ? 1 : Math.min(
+                    closeness(c.screenX(o.x), c.screenY(o.y), width, height),
+                    closeness(c.screenX(d.x), c.screenY(d.y), width, height));
+            if (opacity <= 0) {
+                continue;
+            }
+            g.setGlobalAlpha(opacity);
             Color color = highlight ? COLOR_HIGHLIGHT : COLOR_CONNECTION;
             g.setStroke(color);
             g.setFill(color);
             g.setLineWidth(highlight ? thickness + 0.8 : thickness);
             drawArrow(t, g, c, a, o, d, dots);
         }
+        g.setGlobalAlpha(1);
+    }
+
+    /**
+     * 1 on screen, fading to 0 three quarters of a screen away. Up close, a connection fades
+     * out with its farthest end, so distant cards do not clutter what is being looked at.
+     */
+    static double closeness(double x, double y, double width, double height) {
+        double outsideX = Math.max(0, Math.max(-x, x - width));
+        double outsideY = Math.max(0, Math.max(-y, y - height));
+        return Math.max(0, 1 - Math.hypot(outsideX, outsideY) / (0.75 * Math.max(width, height)));
     }
 
     private boolean segmentOffScreen(Camera c, GraphView.Visual o, GraphView.Visual d, double width, double height) {

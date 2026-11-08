@@ -11,6 +11,13 @@ class CameraAndZoomTest {
     private static final double[] THRESHOLDS = {0.14, 0.30, 0.55, 0.86};
 
     @Test
+    void connectionsFadeWithDistanceFromTheScreen() {
+        assertEquals(1, GraphRenderer.closeness(500, 300, 1000, 600));
+        assertEquals(0.5, GraphRenderer.closeness(1375, 300, 1000, 600), 1e-9);
+        assertEquals(0, GraphRenderer.closeness(-5000, 300, 1000, 600));
+    }
+
+    @Test
     void linkedElementSlotsDoNotOverlapEachOtherOrTheCard() {
         double chipWidth = 150;
         double chipHeight = 40;

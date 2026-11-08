@@ -67,6 +67,7 @@ public final class GraphView extends Region {
     double focusProgress;
     private double focusAnchorX = Double.NaN;
     private double focusAnchorY = Double.NaN;
+    private String followed;
     String connectingFrom;
     String dropTarget;
     double mouseX;
@@ -106,6 +107,7 @@ public final class GraphView extends Region {
             camera.zoomAtCursor(e.getX(), e.getY(), Math.pow(1.0018, e.getDeltaY()));
             focusAnchorX = e.getX();
             focusAnchorY = e.getY();
+            followed = null;
             dirty = true;
         });
         loop.start();
@@ -128,6 +130,7 @@ public final class GraphView extends Region {
         hovered = null;
         focus = null;
         focusProgress = 0;
+        followed = null;
         simulation = null;
         Map<String, Point> positions = type.layout().compute(graph, parameters);
         positions.forEach((id, p) -> visuals.put(id, new Visual(p)));
@@ -174,13 +177,16 @@ public final class GraphView extends Region {
      */
     public void connect(String source, String target) {
         graph = graph.withConnection(source, target);
-        Visual visual = visuals.get(target);
-        double oldX = visual.targetX;
-        double oldY = visual.targetY;
+        followed = target;
         recompute();
-        if (simulation == null) {
-            camera.panSmoothly((oldX - visual.targetX) * camera.scale(), (oldY - visual.targetY) * camera.scale());
+    }
+
+    /** A setting changed: arranges again with the camera locked on the card at the center of the screen. */
+    public void recomputeFollowingCenter() {
+        if (followed == null) {
+            followed = closestTo(getWidth() / 2, getHeight() / 2);
         }
+        recompute();
     }
 
     public void recenter() {
@@ -278,6 +284,22 @@ public final class GraphView extends Region {
         if (camera.update(seconds)) {
             dirty = true;
         }
+        Visual tracked = followed == null ? null : visuals.get(followed);
+        double trackedX = tracked == null ? 0 : tracked.x;
+        double trackedY = tracked == null ? 0 : tracked.y;
+        moveCards(seconds);
+        if (tracked != null && (tracked.x != trackedX || tracked.y != trackedY)) {
+            camera.drag((trackedX - tracked.x) * camera.scale(), (trackedY - tracked.y) * camera.scale());
+        }
+        updateLevel();
+        if (levelTransition < 1) {
+            levelTransition = Math.min(1, levelTransition + seconds / LEVEL_TRANSITION_SECONDS);
+            dirty = true;
+        }
+        updateFocus(seconds);
+    }
+
+    private void moveCards(double seconds) {
         if (simulation != null) {
             boolean keepGoing = simulation.step();
             apply(simulation.positions());
@@ -302,12 +324,6 @@ public final class GraphView extends Region {
                 }
             }
         }
-        updateLevel();
-        if (levelTransition < 1) {
-            levelTransition = Math.min(1, levelTransition + seconds / LEVEL_TRANSITION_SECONDS);
-            dirty = true;
-        }
-        updateFocus(seconds);
     }
 
     /** Up close, the linked elements slide to the focused card; zooming out sends them back. */
@@ -344,6 +360,10 @@ public final class GraphView extends Region {
         }
         double anchorX = Double.isNaN(focusAnchorX) ? width / 2 : focusAnchorX;
         double anchorY = Double.isNaN(focusAnchorY) ? height / 2 : focusAnchorY;
+        return closestTo(anchorX, anchorY);
+    }
+
+    private String closestTo(double anchorX, double anchorY) {
         String closest = null;
         double best = Double.MAX_VALUE;
         for (var entry : visuals.entrySet()) {
@@ -439,6 +459,7 @@ public final class GraphView extends Region {
             } else if (dragged) {
                 focusAnchorX = Double.NaN;
                 focusAnchorY = Double.NaN;
+                followed = null;
                 camera.drag(e.getX() - lastX, e.getY() - lastY);
                 dirty = true;
             }

@@ -156,7 +156,7 @@ public final class GraphLab extends BorderPane {
     private void layoutSlider(String text, double min, double max, DoubleSupplier getter, Consumer<Double> setter) {
         addSlider(text, min, max, getter, value -> {
             setter.accept(value);
-            view.recompute();
+            view.recomputeFollowingCenter();
         });
     }
 
