@@ -189,6 +189,11 @@ public final class Vault implements AutoCloseable {
         return root.resolve(APP_FOLDER).resolve("cache").resolve(card.id());
     }
 
+    public Path pdfPath(Card card) {
+        String name = Path.of(card.notePath()).getFileName().toString().replaceFirst("\\.tex$", "") + ".pdf";
+        return cacheFolder(card).resolve(name);
+    }
+
     /** Puts a deleted card back, with its note. */
     public void restoreCard(Track track, Card parent, Card card, byte[] noteContent) throws IOException {
         Path note = root.resolve(card.notePath());

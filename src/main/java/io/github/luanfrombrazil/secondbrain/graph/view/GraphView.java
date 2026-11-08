@@ -567,6 +567,9 @@ public final class GraphView extends Region {
                 editor.openCard(clicked);
             } else if (e.getClickCount() == 1) {
                 selected = clicked;
+                if (editor != null) {
+                    editor.cardSelected(clicked);
+                }
                 Visual visual = clicked == null ? null : visuals.get(clicked);
                 if (visual != null) {
                     focusAnchorX = Double.NaN;

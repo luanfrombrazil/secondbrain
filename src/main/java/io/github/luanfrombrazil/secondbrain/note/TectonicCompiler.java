@@ -25,9 +25,10 @@ public final class TectonicCompiler {
         }
     }
 
-    private static final Pattern ERROR_LINE = Pattern.compile("^error: (?:.*?):(\\d+): (.*)$");
+    private static final Pattern TEX_ERROR = Pattern.compile("^! (.*)$");
+    private static final Pattern TEX_LINE = Pattern.compile("^l\\.(\\d+) .*$");
     private static final Pattern GENERAL_ERROR = Pattern.compile("^error: (.*)$");
-    private static final long TIMEOUT_SECONDS = 180;
+    private static final long TIMEOUT_SECONDS = 600;
     private static final String PROPERTY = "secondbrain.tectonic";
 
     private final Path executable;
@@ -71,15 +72,20 @@ public final class TectonicCompiler {
                 : new Result(null, parseProblems(output), output);
     }
 
-    /** The errors in Tectonic's output; the ones naming a line come first. */
+    /** The errors in Tectonic's output: TeX ones with their line first, then the general ones. */
     static List<Problem> parseProblems(String log) {
         List<Problem> withLine = new ArrayList<>();
         List<Problem> general = new ArrayList<>();
+        String pending = null;
         for (String line : log.split("\\R")) {
-            Matcher located = ERROR_LINE.matcher(line);
+            Matcher tex = TEX_ERROR.matcher(line);
+            Matcher position = TEX_LINE.matcher(line);
             Matcher other = GENERAL_ERROR.matcher(line);
-            if (located.matches()) {
-                withLine.add(new Problem(Integer.parseInt(located.group(1)), located.group(2)));
+            if (tex.matches()) {
+                pending = tex.group(1);
+            } else if (position.matches() && pending != null) {
+                withLine.add(new Problem(Integer.parseInt(position.group(1)), pending));
+                pending = null;
             } else if (other.matches()) {
                 general.add(new Problem(0, other.group(1)));
             }

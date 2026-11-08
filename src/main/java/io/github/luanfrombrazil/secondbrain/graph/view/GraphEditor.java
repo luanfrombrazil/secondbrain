@@ -9,6 +9,9 @@ public interface GraphEditor {
     /** A drag from one card to another: the source becomes a prerequisite of the target. */
     void connect(String sourceId, String targetId);
 
+    /** A single click: on a card, or on empty space when the id is null. */
+    void cardSelected(String id);
+
     /** A double click on a card. */
     void openCard(String id);
 }

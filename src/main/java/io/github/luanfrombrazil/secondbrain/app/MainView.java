@@ -9,12 +9,15 @@ import io.github.luanfrombrazil.secondbrain.graph.view.ViewParameters;
 import io.github.luanfrombrazil.secondbrain.graph.view.backdrop.Backdrop;
 import io.github.luanfrombrazil.secondbrain.graph.view.backdrop.Backdrops;
 import io.github.luanfrombrazil.secondbrain.note.NoteEditorPane;
+import io.github.luanfrombrazil.secondbrain.note.NotePaper;
 import io.github.luanfrombrazil.secondbrain.track.Track;
 import io.github.luanfrombrazil.secondbrain.vault.Vault;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.Scene;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -29,6 +32,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
 import java.io.IOException;
@@ -109,10 +113,39 @@ final class MainView extends BorderPane implements GraphEditor {
 
         Pane space = new Pane();
         HBox.setHgrow(space, Priority.ALWAYS);
-        HBox bar = new HBox(8, path, space, layout, backdrop, settings);
+        Button preamble = new Button("Preâmbulo");
+        preamble.setOnAction(e -> editPreamble());
+        HBox bar = new HBox(8, path, space, layout, backdrop, preamble, settings);
         bar.setPadding(new Insets(6, 10, 6, 10));
         bar.getStyleClass().add("panel");
         return bar;
+    }
+
+    private void editPreamble() {
+        if (editor == null) {
+            status.setText("Crie uma trilha antes de editar o preâmbulo.");
+            return;
+        }
+        Track track = editor.track();
+        TextArea text = new TextArea(track.preamble());
+        Button save = new Button("Salvar");
+        Label hint = new Label("Vale para as notas novas desta trilha.");
+        hint.getStyleClass().add("label-text");
+        Stage stage = new Stage();
+        save.setOnAction(e -> attempt(() -> {
+            track.setPreamble(text.getText());
+            vault.saveTrack(track);
+            stage.close();
+        }));
+        VBox box = new VBox(8, text, hint, save);
+        box.setPadding(new Insets(10));
+        VBox.setVgrow(text, Priority.ALWAYS);
+        Scene scene = new Scene(box, 620, 420);
+        scene.getStylesheets().addAll(getScene().getStylesheets());
+        stage.initOwner(getScene().getWindow());
+        stage.setTitle("Preâmbulo · " + track.name());
+        stage.setScene(scene);
+        stage.show();
     }
 
     private VBox explorerPanel() {
@@ -266,6 +299,21 @@ final class MainView extends BorderPane implements GraphEditor {
                 afterEdit();
             }
         });
+    }
+
+    /** One click: the note peeks at the right of the graph, unless an editor is open there. */
+    @Override
+    public void cardSelected(String id) {
+        if (cardEditor != null || noteEditor != null) {
+            return;
+        }
+        Card card = id == null ? null
+                : editor.level().stream().filter(c -> c.id().equals(id)).findFirst().orElse(null);
+        if (card == null) {
+            setRight(null);
+            return;
+        }
+        setRight(new NotePaper(vault.pdfPath(card), () -> openNoteEditor(card)));
     }
 
     /** Double click: opens the card's editor. */
