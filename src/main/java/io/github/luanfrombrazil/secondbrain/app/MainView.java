@@ -84,6 +84,10 @@ final class MainView extends BorderPane implements GraphEditor {
         }
     }
 
+    GraphView graphView() {
+        return graphView;
+    }
+
     private HBox topBar() {
         ComboBox<Layout> layout = new ComboBox<>();
         layout.getItems().addAll(layouts);

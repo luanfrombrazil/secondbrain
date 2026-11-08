@@ -75,6 +75,7 @@ public final class GraphView extends Region {
     private double focusAnchorY = Double.NaN;
     private String followed;
     private boolean frameWhenSettled;
+    private boolean frameAfterLayout;
     String connectingFrom;
     private GraphEditor editor;
     String dropTarget;
@@ -126,6 +127,11 @@ public final class GraphView extends Region {
     protected void layoutChildren() {
         canvas.setWidth(getWidth());
         canvas.setHeight(getHeight());
+        if (frameAfterLayout && getWidth() > 0) {
+            frameAfterLayout = false;
+            frameTargets();
+            camera.jumpToTarget();
+        }
         dirty = true;
     }
 
@@ -152,6 +158,7 @@ public final class GraphView extends Region {
         positions.forEach((id, p) -> visuals.put(id, new Visual(p)));
         frameTargets();
         camera.jumpToTarget();
+        frameAfterLayout = getWidth() == 0;
         dirty = true;
     }
 

@@ -33,3 +33,7 @@
     -fx-text-fill: #e6e7ea;
     -fx-font-family: "Consolas", monospace;
 }
+
+.text-field {
+    -fx-prompt-text-fill: #8d93a3;
+}
