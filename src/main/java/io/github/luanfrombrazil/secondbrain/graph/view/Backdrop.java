@@ -34,7 +34,8 @@ public enum Backdrop {
             minorStep /= 5;
         }
         double t = Math.log(minorStep / minScreenStep) / Math.log(5);
-        double fadeIn = t * t * (3 - 2 * t);
+        double ramp = Math.min(1, t * 2);
+        double fadeIn = ramp * ramp * (3 - 2 * ramp);
         double majorStep = minorStep * 5;
 
         double originX = c.screenX(0);

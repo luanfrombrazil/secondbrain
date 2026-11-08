@@ -27,7 +27,7 @@ public final class Parameters {
     // Backdrop
     public double backdropOpacity = 0.16;
     public double backdropStep = 120;
-    public double backdropMinScreenStep = 22;
+    public double backdropMinScreenStep = 12;
     public double backdropLineWidth = 1;
 
     // Zoom thresholds between the five levels, from farthest to nearest
