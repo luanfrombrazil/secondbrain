@@ -1,4 +1,4 @@
-package io.github.luanfrombrazil.secondbrain.graph.view;
+package io.github.luanfrombrazil.secondbrain.graph.view.camera;
 
 /** The camera of the infinite canvas: screen = world × scale + offset. Eases toward its target. */
 public final class Camera {

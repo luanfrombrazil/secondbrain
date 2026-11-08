@@ -1,5 +1,10 @@
 package io.github.luanfrombrazil.secondbrain.graph.view;
 
+import io.github.luanfrombrazil.secondbrain.graph.view.camera.ZoomLevel;
+import io.github.luanfrombrazil.secondbrain.graph.view.camera.Camera;
+import io.github.luanfrombrazil.secondbrain.graph.LayoutType;
+import io.github.luanfrombrazil.secondbrain.graph.view.data.PointNote;
+import io.github.luanfrombrazil.secondbrain.graph.view.data.CardData;
 import io.github.luanfrombrazil.secondbrain.graph.Edge;
 import io.github.luanfrombrazil.secondbrain.graph.Node;
 import javafx.geometry.VPos;
@@ -14,12 +19,12 @@ import java.util.List;
 import java.util.Map;
 
 /** Draws the graph in screen coordinates, with one card drawing per zoom level. */
-final class GraphRenderer {
+public final class GraphRenderer {
 
-    static final Color COLOR_BLOCKED = Color.web("#e0524d");
-    static final Color COLOR_AVAILABLE = Color.web("#e7b53c");
-    static final Color COLOR_IN_PROGRESS = Color.web("#4f8fea");
-    static final Color COLOR_DONE = Color.web("#47b26b");
+    public static final Color COLOR_BLOCKED = Color.web("#e0524d");
+    public static final Color COLOR_AVAILABLE = Color.web("#e7b53c");
+    public static final Color COLOR_IN_PROGRESS = Color.web("#4f8fea");
+    public static final Color COLOR_DONE = Color.web("#47b26b");
 
     private static final Color COLOR_SPACE = Color.web("#17181c");
     private static final Color COLOR_CARD = Color.web("#2a2c33");

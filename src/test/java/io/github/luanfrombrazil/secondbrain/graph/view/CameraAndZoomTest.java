@@ -1,5 +1,7 @@
 package io.github.luanfrombrazil.secondbrain.graph.view;
 
+import io.github.luanfrombrazil.secondbrain.graph.view.camera.ZoomLevel;
+import io.github.luanfrombrazil.secondbrain.graph.view.camera.Camera;
 import io.github.luanfrombrazil.secondbrain.graph.Node;
 import org.junit.jupiter.api.Test;
 

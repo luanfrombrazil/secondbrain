@@ -1,4 +1,4 @@
-package io.github.luanfrombrazil.secondbrain.graph.view;
+package io.github.luanfrombrazil.secondbrain.graph;
 
 import io.github.luanfrombrazil.secondbrain.graph.Layout;
 import io.github.luanfrombrazil.secondbrain.graph.DependencyLayout;

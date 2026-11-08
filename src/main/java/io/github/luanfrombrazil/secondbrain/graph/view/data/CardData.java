@@ -1,4 +1,4 @@
-package io.github.luanfrombrazil.secondbrain.graph.view;
+package io.github.luanfrombrazil.secondbrain.graph.view.data;
 
 import javafx.scene.paint.Color;
 

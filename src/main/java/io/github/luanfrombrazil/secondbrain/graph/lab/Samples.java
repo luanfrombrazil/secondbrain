@@ -1,5 +1,8 @@
-package io.github.luanfrombrazil.secondbrain.graph.view;
+package io.github.luanfrombrazil.secondbrain.graph.lab;
 
+import io.github.luanfrombrazil.secondbrain.graph.view.GraphRenderer;
+import io.github.luanfrombrazil.secondbrain.graph.view.data.PointNote;
+import io.github.luanfrombrazil.secondbrain.graph.view.data.CardData;
 import io.github.luanfrombrazil.secondbrain.graph.Edge;
 import io.github.luanfrombrazil.secondbrain.graph.Graph;
 import io.github.luanfrombrazil.secondbrain.graph.Node;

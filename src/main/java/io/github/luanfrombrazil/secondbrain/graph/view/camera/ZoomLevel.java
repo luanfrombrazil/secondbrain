@@ -1,4 +1,4 @@
-package io.github.luanfrombrazil.secondbrain.graph.view;
+package io.github.luanfrombrazil.secondbrain.graph.view.camera;
 
 /** The semantic zoom levels, from farthest to nearest. */
 public enum ZoomLevel {

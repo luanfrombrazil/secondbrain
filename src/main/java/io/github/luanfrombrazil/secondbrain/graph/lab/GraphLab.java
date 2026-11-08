@@ -1,10 +1,9 @@
 package io.github.luanfrombrazil.secondbrain.graph.lab;
 
+import io.github.luanfrombrazil.secondbrain.graph.LayoutType;
+import io.github.luanfrombrazil.secondbrain.graph.view.backdrop.Backdrop;
 import io.github.luanfrombrazil.secondbrain.graph.Parameters;
-import io.github.luanfrombrazil.secondbrain.graph.view.Samples;
-import io.github.luanfrombrazil.secondbrain.graph.view.Backdrop;
 import io.github.luanfrombrazil.secondbrain.graph.view.GraphView;
-import io.github.luanfrombrazil.secondbrain.graph.view.LayoutType;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.control.Button;

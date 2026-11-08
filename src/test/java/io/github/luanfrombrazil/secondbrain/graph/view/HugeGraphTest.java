@@ -1,5 +1,7 @@
 package io.github.luanfrombrazil.secondbrain.graph.view;
 
+import io.github.luanfrombrazil.secondbrain.graph.LayoutType;
+import io.github.luanfrombrazil.secondbrain.graph.lab.Samples;
 import io.github.luanfrombrazil.secondbrain.graph.Parameters;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;

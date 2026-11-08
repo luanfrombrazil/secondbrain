@@ -31,9 +31,12 @@ Os pacotes seguem as partes do produto, com o modelo e a tela juntos, e não cam
 | Pacote | O que tem |
 |---|---|
 | `app` | Inicialização e janela (`SecondBrainApp`) |
-| `graph` | As disposições, sem JavaFX: `Graph`, `DependencyLayout`, `RadialLayout`, `ForceLayout` (com `ForceSimulation`) e `Parameters` |
-| `graph.view` | A tela infinita: `GraphView`, `GraphRenderer`, `Camera`, `ZoomLevel` e `Backdrop` |
-| `graph.lab` | O laboratório para ajustar a física (`GraphLab`) |
+| `graph` | As disposições, sem JavaFX: `Graph`, `LayoutType`, `DependencyLayout`, `RadialLayout`, `ForceLayout` (com `ForceSimulation`) e `Parameters` |
+| `graph.view` | A tela infinita: `GraphView` e `GraphRenderer` |
+| `graph.view.camera` | `Camera` e `ZoomLevel` |
+| `graph.view.data` | O que o grafo mostra de cada card: `CardData` e `PointNote` |
+| `graph.view.backdrop` | Os fundos do espaço (`Backdrop`) |
+| `graph.lab` | O laboratório para ajustar a física (`GraphLab`) e os exemplos (`Samples`) |
 
 Os próximos pacotes nascem com as fases de [implementacao.md](implementacao.md).
 

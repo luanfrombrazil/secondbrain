@@ -1,5 +1,6 @@
-package io.github.luanfrombrazil.secondbrain.graph.view;
+package io.github.luanfrombrazil.secondbrain.graph.view.backdrop;
 
+import io.github.luanfrombrazil.secondbrain.graph.view.camera.Camera;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
@@ -24,7 +25,7 @@ public enum Backdrop {
         return name;
     }
 
-    void draw(GraphicsContext g, Camera c, double width, double height) {
+    public void draw(GraphicsContext g, Camera c, double width, double height) {
         if (this == PLAIN) {
             return;
         }
