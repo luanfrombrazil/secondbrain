@@ -36,6 +36,7 @@ import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -309,7 +310,7 @@ final class MainView extends BorderPane implements GraphEditor {
         }
         Card card = id == null ? null
                 : editor.level().stream().filter(c -> c.id().equals(id)).findFirst().orElse(null);
-        if (card == null) {
+        if (card == null || !Files.exists(vault.pdfPath(card))) {
             setRight(null);
             return;
         }
