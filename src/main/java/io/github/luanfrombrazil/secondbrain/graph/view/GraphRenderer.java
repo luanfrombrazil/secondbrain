@@ -559,7 +559,7 @@ final class GraphRenderer {
             g.setFill(card.stateColor());
             g.fillRoundRect(x, y, w, strip + corner, corner, corner);
             g.setFill(COLOR_CARD);
-            g.fillRect(x, y + strip, w, corner);
+            g.fillRect(x, y + strip, w, corner + 2); // 2 px past the stripe shape, to cover its antialiased edge
 
             if (selected || renderLevel != ZoomLevel.FAR) {
                 g.setStroke(selected ? COLOR_SELECTION : COLOR_BORDER);
