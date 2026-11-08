@@ -182,7 +182,7 @@ public final class NoteEditorPane extends BorderPane {
             status.setText("Erro na compilação.");
             return;
         }
-        int header = NoteDocument.headerLines(preamble.get(), title.get());
+        int header = NoteDocument.headerLines(preamble.get(), title.get(), code.getText());
         TectonicCompiler.Problem first = problems.getFirst();
         int firstLine = first.line() - header;
         status.setText(firstLine > 0

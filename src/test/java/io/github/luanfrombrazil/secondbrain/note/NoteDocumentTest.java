@@ -21,7 +21,22 @@ class NoteDocumentTest {
     @Test
     void headerLinesPointToTheBeginningOfTheDocument() {
         String file = NoteDocument.compose(PREAMBLE, "T", SOURCE);
-        assertEquals("\\begin{document}", file.split("\n")[NoteDocument.headerLines(PREAMBLE, "T")]);
+        assertEquals("\\begin{document}", file.split("\n")[NoteDocument.headerLines(PREAMBLE, "T", SOURCE)]);
+    }
+
+    @Test
+    void titleAuthorAndDateInTheNoteOverrideTheGlobalOnes() {
+        String source = "\\title{Meu {título}}\n\\begin{document}\n\\maketitle\n\\author{Eu}\n\\date{hoje}\n\\end{document}";
+        String file = NoteDocument.compose(PREAMBLE, "Card", source);
+        assertTrue(file.indexOf("\\title{Meu {título}}") > file.indexOf("\\title{Card}"));
+        assertTrue(file.indexOf("\\author{Eu}") < file.indexOf("\\begin{document}"));
+        assertTrue(file.indexOf("\\date{hoje}") < file.indexOf("\\begin{document}"));
+        assertEquals(source, NoteDocument.source(file));
+    }
+
+    @Test
+    void aCommentedTitleDoesNotOverride() {
+        assertEquals("", NoteDocument.overrides("% \\title{Não}\n"));
     }
 
     @Test
