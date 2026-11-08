@@ -178,7 +178,7 @@ public final class Vault implements AutoCloseable {
     }
 
     private static String noteTemplate(Track track, String title) {
-        return NoteDocument.compose(track.preamble(), title, "");
+        return NoteDocument.compose(track.preamble(), title, NoteDocument.EMPTY_SOURCE);
     }
 
     /** Gives an empty note the track's starting text, so that it can compile. */

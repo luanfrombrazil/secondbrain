@@ -55,7 +55,7 @@ public final class NoteEditorPane extends BorderPane {
         this.cacheFolder = cacheFolder;
         this.compiler = TectonicCompiler.find();
 
-        code = new CodeArea(NoteDocument.body(Files.readString(texFile, StandardCharsets.UTF_8)));
+        code = new CodeArea(NoteDocument.source(Files.readString(texFile, StandardCharsets.UTF_8)));
         codeScroll = new VirtualizedScrollPane<>(code);
         code.setParagraphGraphicFactory(LineNumberFactory.get(code));
         code.getStyleClass().add("tex-code");

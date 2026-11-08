@@ -8,29 +8,34 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class NoteDocumentTest {
 
     private static final String PREAMBLE = "\\documentclass{article}\n\\usepackage{amsmath}\n";
+    private static final String SOURCE = "\\begin{document}\nPrimeira linha.\n\\end{document}";
 
     @Test
-    void theBodySurvivesComposingAndReading() {
-        String file = NoteDocument.compose(PREAMBLE, "Cálculo", "Primeira linha.\n\nSegunda.");
+    void theDocumentPartSurvivesComposingAndReading() {
+        String file = NoteDocument.compose(PREAMBLE, "Cálculo", SOURCE);
         assertTrue(file.startsWith(PREAMBLE));
         assertTrue(file.contains("\\title{Cálculo}"));
-        assertEquals("Primeira linha.\n\nSegunda.", NoteDocument.body(file));
+        assertEquals(SOURCE, NoteDocument.source(file));
     }
 
     @Test
-    void headerLinesPointToTheFirstLineOfTheBody() {
-        String file = NoteDocument.compose(PREAMBLE, "T", "corpo");
-        int lines = NoteDocument.headerLines(PREAMBLE, "T");
-        assertEquals("corpo", file.split("\n")[lines]);
+    void headerLinesPointToTheBeginningOfTheDocument() {
+        String file = NoteDocument.compose(PREAMBLE, "T", SOURCE);
+        assertEquals("\\begin{document}", file.split("\n")[NoteDocument.headerLines(PREAMBLE, "T")]);
     }
 
     @Test
-    void anOldNoteWithItsOwnHeaderKeepsOnlyTheBody() {
-        assertEquals("texto", NoteDocument.body("\\documentclass{book}\n\\begin{document}\ntexto\n\\end{document}\n"));
+    void anOldNoteLosesOnlyItsHeader() {
+        assertEquals(SOURCE, NoteDocument.source("\\documentclass{book}\n" + SOURCE + "\n"));
     }
 
     @Test
-    void aTextWithoutMarkersIsAllBody() {
-        assertEquals("só texto", NoteDocument.body("só texto\n"));
+    void anEmptyNoteStartsAsAnEmptyDocument() {
+        assertEquals(NoteDocument.EMPTY_SOURCE, NoteDocument.source("  \n"));
+    }
+
+    @Test
+    void aTextWithoutDocumentMarkersIsWrapped() {
+        assertEquals("\\begin{document}\nsó texto\n\\end{document}", NoteDocument.source("só texto\n"));
     }
 }
