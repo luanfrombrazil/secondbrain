@@ -28,6 +28,7 @@ public final class GraphView extends Region {
     private static final double LEVEL_TRANSITION_SECONDS = 0.18;
     private static final double MIN_DRAG = 4;
     private static final double FOCUS_SECONDS = 0.3;
+    private static final int MAX_CARDS_TO_FADE = 400;
 
     /** Where the card is and where it is going. */
     static final class Visual {
@@ -361,7 +362,8 @@ public final class GraphView extends Region {
         if (next != level) {
             previousLevel = level;
             level = next;
-            levelTransition = 0;
+            // Fading draws every card twice, which is not worth it with this many on screen.
+            levelTransition = drawn > MAX_CARDS_TO_FADE ? 1 : 0;
             dirty = true;
         }
     }

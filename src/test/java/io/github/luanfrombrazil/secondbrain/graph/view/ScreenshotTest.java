@@ -64,6 +64,42 @@ class ScreenshotTest {
         capture(folder, LayoutType.DEPENDENCY, 10, 1.0, "zoom-near");
         dragFromHandleCreatesConnection();
         captureLinkedElements(folder);
+        benchmark();
+    }
+
+    /** Prints the milliseconds per frame, including the GPU work forced by the snapshot. */
+    private void benchmark() {
+        for (int size : new int[]{200, 2000}) {
+            GraphView view = new GraphView(new Parameters());
+            view.stopAnimation();
+            new Scene(view, WIDTH, HEIGHT);
+            view.resize(WIDTH, HEIGHT);
+            view.layout();
+            Samples.Sample sample = Samples.generate(size);
+            view.show(sample.graph(), sample.cards(), sample.pointNotes());
+            view.settle();
+            double fit = view.camera().scale();
+            for (double scale : new double[]{fit, 0.08, 0.2, 0.42, 0.72, 1.0}) {
+                view.camera().zoomAtCursor(WIDTH / 2.0, HEIGHT / 2.0, scale / view.camera().scale());
+                view.settle();
+                report(view, size, scale, "stable");
+                view.levelTransition = 0.5;
+                report(view, size, scale, "transition");
+                view.levelTransition = 1;
+            }
+        }
+    }
+
+    private void report(GraphView view, int size, double scale, String phase) {
+        view.canvas().snapshot(null, null);
+        long start = System.nanoTime();
+        int frames = 10;
+        for (int i = 0; i < frames; i++) {
+            view.drawNow();
+            view.canvas().snapshot(null, null);
+        }
+        System.out.printf("BENCH %5d cards  zoom %.3f  %-10s %6.1f ms  (%d drawn)%n",
+                size, scale, phase, (System.nanoTime() - start) / 1e6 / frames, view.drawn());
     }
 
     private void captureLinkedElements(Path folder) throws IOException {

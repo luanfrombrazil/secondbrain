@@ -377,17 +377,21 @@ final class GraphRenderer {
         double y2 = c.screenY(ey);
         double c2x = x1;
         double c2y = y1;
-        g.beginPath();
-        g.moveTo(x1, y1);
         if (!curved) {
-            g.lineTo(x2, y2);
+            g.strokeLine(x1, y1, x2, y2);
         } else {
             double gap = Math.max(30 * c.scale(), (x2 - x1) / 2);
             c2x = x2 - gap;
             c2y = y2;
-            g.bezierCurveTo(x1 + gap, y1, c2x, c2y, x2, y2);
+            if (t.level.compareTo(ZoomLevel.MEDIUM) < 0) {
+                strokeCurveAsLines(g, x1, y1, x1 + gap, y1, c2x, c2y, x2, y2);
+            } else {
+                g.beginPath();
+                g.moveTo(x1, y1);
+                g.bezierCurveTo(x1 + gap, y1, c2x, c2y, x2, y2);
+                g.stroke();
+            }
         }
-        g.stroke();
         if (!fromCenters) {
             drawArrowhead(g, curved ? c2x : x1, curved ? c2y : y1, x2, y2, Math.clamp(11 * c.scale(), 5, 13));
         }
@@ -413,6 +417,23 @@ final class GraphRenderer {
                 dx == 0 ? Double.MAX_VALUE : Node.WIDTH / 2 / Math.abs(dx),
                 dy == 0 ? Double.MAX_VALUE : Node.HEIGHT / 2 / Math.abs(dy));
         return new double[]{ax + dx * t, ay + dy * t};
+    }
+
+    /** Separate short lines are much faster than one stroked curve; from afar they look the same. */
+    private static void strokeCurveAsLines(GraphicsContext g, double x0, double y0, double x1, double y1,
+                                           double x2, double y2, double x3, double y3) {
+        int segments = 8;
+        double previousX = x0;
+        double previousY = y0;
+        for (int i = 1; i <= segments; i++) {
+            double t = (double) i / segments;
+            double u = 1 - t;
+            double x = u * u * u * x0 + 3 * u * u * t * x1 + 3 * u * t * t * x2 + t * t * t * x3;
+            double y = u * u * u * y0 + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y3;
+            g.strokeLine(previousX, previousY, x, y);
+            previousX = x;
+            previousY = y;
+        }
     }
 
     private void drawLinks(GraphView t, GraphicsContext g, Camera c) {
@@ -460,24 +481,39 @@ final class GraphRenderer {
         double x = cx - w / 2;
         double y = cy - h / 2;
         double corner = Math.max(3, 16 * e);
-        g.setFill(COLOR_SHADOW);
-        g.fillRoundRect(x - 2, y - 2, w + 4, h + 4, corner + 3, corner + 3);
-        g.setFill(COLOR_CARD);
-        g.fillRoundRect(x, y, w, h, corner, corner);
-
-        // The state stripe follows the curve of the top corners.
         double strip = Math.max(2, 8 * e);
-        g.save();
-        g.beginPath();
-        g.rect(x, y, w, strip);
-        g.clip();
-        g.setFill(card.stateColor());
-        g.fillRoundRect(x, y, w, h, corner, corner);
-        g.restore();
 
-        g.setStroke(selected ? COLOR_SELECTION : COLOR_BORDER);
-        g.setLineWidth(selected ? 2 : 1);
-        g.strokeRoundRect(x, y, w, h, corner, corner);
+        // Clips and stroked round shapes are very slow on Canvas, so the far levels use plain rectangles.
+        if (renderLevel.compareTo(ZoomLevel.FAR) < 0) {
+            g.setFill(COLOR_CARD);
+            g.fillRect(x, y, w, h);
+            g.setFill(card.stateColor());
+            g.fillRect(x, y, w, strip);
+            if (selected) {
+                g.setStroke(COLOR_SELECTION);
+                g.setLineWidth(2);
+                g.strokeRect(x, y, w, h);
+            }
+        } else {
+            if (renderLevel != ZoomLevel.FAR) {
+                g.setFill(COLOR_SHADOW);
+                g.fillRoundRect(x - 2, y - 2, w + 4, h + 4, corner + 3, corner + 3);
+            }
+            g.setFill(COLOR_CARD);
+            g.fillRoundRect(x, y, w, h, corner, corner);
+
+            // The state stripe follows the curve of the top corners.
+            g.setFill(card.stateColor());
+            g.fillRoundRect(x, y, w, strip + corner, corner, corner);
+            g.setFill(COLOR_CARD);
+            g.fillRect(x, y + strip, w, corner);
+
+            if (selected || renderLevel != ZoomLevel.FAR) {
+                g.setStroke(selected ? COLOR_SELECTION : COLOR_BORDER);
+                g.setLineWidth(selected ? 2 : 1);
+                g.strokeRoundRect(x, y, w, h, corner, corner);
+            }
+        }
 
         double margin = 14 * e;
         double usableWidth = w - 2 * margin;
