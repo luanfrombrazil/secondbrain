@@ -24,7 +24,7 @@ O grafo pode ser arrumado de várias formas. O usuário não move os cards: esco
 - **Por forças:** os cards se repelem e cada conexão ou link puxa os dois cards um para o outro. Notas que se referenciam muito ficam juntas, e os clusters aparecem sozinhos. A simulação assenta sozinha; o usuário não arrasta cards.
 - **Árvore circular (radial):** cada filho fica em volta do próprio pai, em anéis por nível de dependência. Todas as setas têm o mesmo comprimento e nenhuma atravessa um card; um card com dois pais fica no ângulo entre eles.
 
-Quando um card se ramifica em vários filhos, todas as setas curvam e o pai fica centrado entre eles.
+Na disposição por dependência, quando um card se ramifica em vários filhos, todas as setas curvam e o pai fica centrado entre eles. Um filho com vários pais fica no meio deles, também com setas curvas. Com um filho e um pai, a seta é reta. Nas disposições radial e por forças, todas as conexões são retas.
 
 Escolher uma disposição faz os cards deslizarem até o lugar novo, e a câmera centraliza o grafo.
 
