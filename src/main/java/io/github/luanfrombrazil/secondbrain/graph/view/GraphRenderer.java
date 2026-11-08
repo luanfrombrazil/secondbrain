@@ -60,7 +60,6 @@ final class GraphRenderer {
             if (t.showLinks) {
                 drawLinks(t, g, c);
             }
-            drawPointNotes(t, g, c, width, height);
         }
 
         int drawn = 0;
@@ -78,10 +77,75 @@ final class GraphRenderer {
             drawCard(t, g, c, card, v, t.level);
             g.setGlobalAlpha(1);
         }
+        drawLinkedElements(t, g, c);
         drawHandles(t, g, c);
         drawConnectionInProgress(t, g, c);
         drawTooltip(t, g, c);
         return drawn;
+    }
+
+    /** Where the i-th linked element sits, relative to the card: rows of three above, then below. */
+    static double[] slotOffset(int index) {
+        double[] columns = {0, -1, 1};
+        int row = index / 6;
+        int inRow = index % 6;
+        double sign = inRow < 3 ? -1 : 1;
+        return new double[]{
+                columns[inRow % 3] * (NOTE_WIDTH + 14),
+                sign * (Node.HEIGHT / 2 + NOTE_HEIGHT / 2 + 28 + row * (NOTE_HEIGHT + 12))};
+    }
+
+    private record LinkedElement(String title, double fromX, double fromY) {
+    }
+
+    /** The point notes and linked cards of the focused card, sliding from where they are to around it. */
+    private void drawLinkedElements(GraphView t, GraphicsContext g, Camera c) {
+        GraphView.Visual v = t.focus == null ? null : t.visuals.get(t.focus);
+        if (v == null || t.focusProgress <= 0) {
+            return;
+        }
+        List<LinkedElement> elements = new ArrayList<>();
+        for (PointNote note : t.pointNotes) {
+            if (note.linkedTo().contains(t.focus)) {
+                elements.add(new LinkedElement(note.title(), v.x, v.y));
+            }
+        }
+        if (t.showLinks) {
+            for (Edge link : t.graph.links()) {
+                String other = link.source().equals(t.focus) ? link.target()
+                        : link.target().equals(t.focus) ? link.source() : null;
+                GraphView.Visual position = other == null ? null : t.visuals.get(other);
+                if (position != null) {
+                    elements.add(new LinkedElement(t.cards.get(other).title(), position.x, position.y));
+                }
+            }
+        }
+
+        double eased = t.focusProgress * t.focusProgress * (3 - 2 * t.focusProgress);
+        double w = NOTE_WIDTH * c.scale();
+        double h = NOTE_HEIGHT * c.scale();
+        g.setGlobalAlpha(eased);
+        for (int i = 0; i < elements.size(); i++) {
+            LinkedElement element = elements.get(i);
+            double[] slot = slotOffset(i);
+            double x = element.fromX() + (v.x + slot[0] - element.fromX()) * eased;
+            double y = element.fromY() + (v.y + slot[1] - element.fromY()) * eased;
+            double[] border = onBorder(v.x, v.y, x, y);
+            g.setStroke(COLOR_LINK);
+            g.setLineWidth(1.2);
+            g.setLineDashes(5, 5);
+            g.strokeLine(c.screenX(x), c.screenY(y), c.screenX(border[0]), c.screenY(border[1]));
+            g.setLineDashes((double[]) null);
+            double px = c.screenX(x) - w / 2;
+            double py = c.screenY(y) - h / 2;
+            g.setFill(COLOR_CARD);
+            g.fillRoundRect(px, py, w, h, 8, 8);
+            g.setStroke(COLOR_LINK);
+            g.strokeRoundRect(px, py, w, h, 8, 8);
+            text(g, element.title(), px + 8 * c.scale(), py + h / 2, w - 16 * c.scale(),
+                    12 * c.scale(), false, COLOR_TEXT, VPos.CENTER);
+        }
+        g.setGlobalAlpha(1);
     }
 
     /** The card whose connection handle is at the screen point, or null. */
@@ -358,58 +422,14 @@ final class GraphRenderer {
         for (Edge a : t.graph.links()) {
             GraphView.Visual o = t.visuals.get(a.source());
             GraphView.Visual d = t.visuals.get(a.target());
-            if (o != null && d != null) {
+            boolean drawnAsChip = a.source().equals(t.focus) || a.target().equals(t.focus);
+            if (o != null && d != null && !drawnAsChip) {
                 g.strokeLine(c.screenX(o.x), c.screenY(o.y), c.screenX(d.x), c.screenY(d.y));
             }
         }
         g.setLineDashes((double[]) null);
     }
 
-    /** The point notes of the focused card: the selected one, or the one closest to the screen center. */
-    private void drawPointNotes(GraphView t, GraphicsContext g, Camera c, double width, double height) {
-        String focus = t.selected;
-        if (focus == null) {
-            double best = Double.MAX_VALUE;
-            for (var e : t.visuals.entrySet()) {
-                double d = Math.hypot(c.screenX(e.getValue().x) - width / 2, c.screenY(e.getValue().y) - height / 2);
-                if (d < best) {
-                    best = d;
-                    focus = e.getKey();
-                }
-            }
-        }
-        GraphView.Visual v = focus == null ? null : t.visuals.get(focus);
-        if (v == null) {
-            return;
-        }
-        List<PointNote> notes = new ArrayList<>();
-        for (PointNote note : t.pointNotes) {
-            if (note.linkedTo().contains(focus)) {
-                notes.add(note);
-            }
-        }
-        double step = NOTE_WIDTH + 14;
-        double start = v.x - step * (notes.size() - 1) / 2;
-        double y = v.y - Node.HEIGHT / 2 - 62;
-        for (int i = 0; i < notes.size(); i++) {
-            double x = start + i * step;
-            g.setStroke(COLOR_LINK);
-            g.setLineWidth(1.2);
-            g.setLineDashes(5, 5);
-            g.strokeLine(c.screenX(x), c.screenY(y + NOTE_HEIGHT / 2), c.screenX(v.x), c.screenY(v.y - Node.HEIGHT / 2));
-            g.setLineDashes((double[]) null);
-            double px = c.screenX(x - NOTE_WIDTH / 2);
-            double py = c.screenY(y - NOTE_HEIGHT / 2);
-            double w = NOTE_WIDTH * c.scale();
-            double h = NOTE_HEIGHT * c.scale();
-            g.setFill(COLOR_CARD);
-            g.fillRoundRect(px, py, w, h, 8, 8);
-            g.setStroke(COLOR_LINK);
-            g.strokeRoundRect(px, py, w, h, 8, 8);
-            text(g, notes.get(i).title(), px + 8 * c.scale(), py + h / 2, w - 16 * c.scale(),
-                    12 * c.scale(), false, COLOR_TEXT, VPos.CENTER);
-        }
-    }
 
     // Cards
 

@@ -27,6 +27,7 @@ public final class GraphView extends Region {
     private static final double CARD_SPEED = 7;
     private static final double LEVEL_TRANSITION_SECONDS = 0.18;
     private static final double MIN_DRAG = 4;
+    private static final double FOCUS_SECONDS = 0.3;
 
     /** Where the card is and where it is going. */
     static final class Visual {
@@ -61,6 +62,10 @@ public final class GraphView extends Region {
     double levelTransition = 1;
     String selected;
     String hovered;
+    String focus;
+    double focusProgress;
+    private double focusAnchorX = Double.NaN;
+    private double focusAnchorY = Double.NaN;
     String connectingFrom;
     String dropTarget;
     double mouseX;
@@ -98,6 +103,8 @@ public final class GraphView extends Region {
         canvas.addEventHandler(MouseEvent.ANY, this::onMouse);
         canvas.setOnScroll(e -> {
             camera.zoomAtCursor(e.getX(), e.getY(), Math.pow(1.0018, e.getDeltaY()));
+            focusAnchorX = e.getX();
+            focusAnchorY = e.getY();
             dirty = true;
         });
         loop.start();
@@ -118,6 +125,8 @@ public final class GraphView extends Region {
         visuals.clear();
         selected = null;
         hovered = null;
+        focus = null;
+        focusProgress = 0;
         simulation = null;
         Map<String, Point> positions = type.layout().compute(graph, parameters);
         positions.forEach((id, p) -> visuals.put(id, new Visual(p)));
@@ -242,6 +251,8 @@ public final class GraphView extends Region {
         camera.jumpToTarget();
         updateLevel();
         levelTransition = 1;
+        updateFocus(FOCUS_SECONDS);
+        updateFocus(FOCUS_SECONDS);
     }
 
     public void drawNow() {
@@ -295,6 +306,54 @@ public final class GraphView extends Region {
             levelTransition = Math.min(1, levelTransition + seconds / LEVEL_TRANSITION_SECONDS);
             dirty = true;
         }
+        updateFocus(seconds);
+    }
+
+    /** Up close, the linked elements slide to the focused card; zooming out sends them back. */
+    private void updateFocus(double seconds) {
+        double change = seconds / FOCUS_SECONDS;
+        if (level == ZoomLevel.NEAR) {
+            String next = findFocus();
+            if (!java.util.Objects.equals(next, focus)) {
+                focus = next;
+                focusProgress = 0;
+                dirty = true;
+            }
+            if (focusProgress < 1) {
+                focusProgress = Math.min(1, focusProgress + change);
+                dirty = true;
+            }
+        } else if (focusProgress > 0) {
+            focusProgress = Math.max(0, focusProgress - change);
+            dirty = true;
+        }
+    }
+
+    /** The selected card if it is on screen; otherwise the card closest to where the zoom is aimed. */
+    private String findFocus() {
+        double width = getWidth();
+        double height = getHeight();
+        Visual chosen = selected == null ? null : visuals.get(selected);
+        if (chosen != null) {
+            double x = camera.screenX(chosen.x);
+            double y = camera.screenY(chosen.y);
+            if (x >= 0 && y >= 0 && x <= width && y <= height) {
+                return selected;
+            }
+        }
+        double anchorX = Double.isNaN(focusAnchorX) ? width / 2 : focusAnchorX;
+        double anchorY = Double.isNaN(focusAnchorY) ? height / 2 : focusAnchorY;
+        String closest = null;
+        double best = Double.MAX_VALUE;
+        for (var entry : visuals.entrySet()) {
+            double distance = Math.hypot(camera.screenX(entry.getValue().x) - anchorX,
+                    camera.screenY(entry.getValue().y) - anchorY);
+            if (distance < best) {
+                best = distance;
+                closest = entry.getKey();
+            }
+        }
+        return closest;
     }
 
     private void updateLevel() {
@@ -376,6 +435,8 @@ public final class GraphView extends Region {
                 dropTarget = connectingFrom.equals(under) ? null : under;
                 dirty = true;
             } else if (dragged) {
+                focusAnchorX = Double.NaN;
+                focusAnchorY = Double.NaN;
                 camera.drag(e.getX() - lastX, e.getY() - lastY);
                 dirty = true;
             }

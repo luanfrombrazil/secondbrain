@@ -1,12 +1,28 @@
 package io.github.luanfrombrazil.secondbrain.graph.view;
 
+import io.github.luanfrombrazil.secondbrain.graph.Node;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CameraAndZoomTest {
 
     private static final double[] THRESHOLDS = {0.14, 0.30, 0.55, 0.86};
+
+    @Test
+    void linkedElementSlotsDoNotOverlapEachOtherOrTheCard() {
+        double chipWidth = 150;
+        double chipHeight = 40;
+        for (int i = 0; i < 30; i++) {
+            double[] a = GraphRenderer.slotOffset(i);
+            assertTrue(Math.abs(a[1]) >= Node.HEIGHT / 2 + chipHeight / 2);
+            for (int j = i + 1; j < 30; j++) {
+                double[] b = GraphRenderer.slotOffset(j);
+                assertTrue(Math.abs(a[0] - b[0]) >= chipWidth || Math.abs(a[1] - b[1]) >= chipHeight);
+            }
+        }
+    }
 
     @Test
     void zoomKeepsPointUnderCursor() {
