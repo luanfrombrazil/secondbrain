@@ -40,6 +40,8 @@ final class GraphRenderer {
     private static final double NOTE_HEIGHT = 40;
 
     private static final double HANDLE_HIT_RADIUS = 12;
+    /** The line stops this fraction of the head length before the tip, just inside the head. */
+    private static final double LINE_STOP = 0.8;
     // With few cards on screen every curve is smooth; quality drops gradually as the count grows.
     private static final int CARDS_AT_FULL_QUALITY = 100;
     private static final int CARDS_AT_LOWEST_QUALITY = 1000;
@@ -421,33 +423,74 @@ final class GraphRenderer {
         double y1 = c.screenY(sy);
         double x2 = c.screenX(ex);
         double y2 = c.screenY(ey);
-        double c2x = x1;
-        double c2y = y1;
+        double head = fromCenters ? 0 : Math.clamp(11 * c.scale(), 5, 13) * Math.max(1, t.parameters().arrowWidth / 2.2);
+        double lineEnd = head * LINE_STOP;
         if (!curved) {
-            g.strokeLine(x1, y1, x2, y2);
-        } else {
-            double gap = Math.max(30 * c.scale(), (x2 - x1) / 2);
-            c2x = x2 - gap;
-            c2y = y2;
-            double fromCenter = Math.hypot((x1 + x2) / 2 - viewWidth / 2, (y1 + y2) / 2 - viewHeight / 2)
-                    / (Math.hypot(viewWidth, viewHeight) / 2);
-            boolean smooth = t.level.compareTo(ZoomLevel.MEDIUM) >= 0
-                    || (fromCenter < smoothZone && smoothCurvesLeft > 0);
-            if (!smooth) {
-                int segments = (int) Math.round(MAX_LINE_SEGMENTS
-                        - (MAX_LINE_SEGMENTS - minLineSegments) * Math.min(1, fromCenter));
-                strokeCurveAsLines(g, x1, y1, x1 + gap, y1, c2x, c2y, x2, y2, segments);
-            } else {
-                smoothCurvesLeft--;
-                g.beginPath();
-                g.moveTo(x1, y1);
-                g.bezierCurveTo(x1 + gap, y1, c2x, c2y, x2, y2);
-                g.stroke();
+            double length = Math.max(1, Math.hypot(x2 - x1, y2 - y1));
+            double keep = Math.max(0, 1 - lineEnd / length);
+            g.strokeLine(x1, y1, x1 + (x2 - x1) * keep, y1 + (y2 - y1) * keep);
+            if (!fromCenters) {
+                drawArrowhead(g, x1, y1, x2, y2, head);
             }
+            return;
+        }
+
+        double gap = Math.max(30 * c.scale(), (x2 - x1) / 2);
+        double[] xs = {x1, x1 + gap, x2 - gap, x2};
+        double[] ys = {y1, y1, y2, y2};
+        double[] lineX = subcurve(xs, parameterAtDistance(xs, ys, lineEnd));
+        double[] lineY = subcurve(ys, parameterAtDistance(xs, ys, lineEnd));
+
+        double fromCenter = Math.hypot((x1 + x2) / 2 - viewWidth / 2, (y1 + y2) / 2 - viewHeight / 2)
+                / (Math.hypot(viewWidth, viewHeight) / 2);
+        boolean smooth = t.level.compareTo(ZoomLevel.MEDIUM) >= 0
+                || (fromCenter < smoothZone && smoothCurvesLeft > 0);
+        if (!smooth) {
+            int segments = (int) Math.round(MAX_LINE_SEGMENTS
+                    - (MAX_LINE_SEGMENTS - minLineSegments) * Math.min(1, fromCenter));
+            strokeCurveAsLines(g, lineX[0], lineY[0], lineX[1], lineY[1], lineX[2], lineY[2], lineX[3], lineY[3], segments);
+        } else {
+            smoothCurvesLeft--;
+            g.beginPath();
+            g.moveTo(lineX[0], lineY[0]);
+            g.bezierCurveTo(lineX[1], lineY[1], lineX[2], lineY[2], lineX[3], lineY[3]);
+            g.stroke();
         }
         if (!fromCenters) {
-            drawArrowhead(g, curved ? c2x : x1, curved ? c2y : y1, x2, y2, Math.clamp(11 * c.scale(), 5, 13) * Math.max(1, t.parameters().arrowWidth / 2.2));
+            // The head points along the curve as it enters the head, not along the final tangent.
+            double atBase = parameterAtDistance(xs, ys, head);
+            drawArrowhead(g, subcurve(xs, atBase)[3], subcurve(ys, atBase)[3], x2, y2, head);
         }
+    }
+
+    /** The curve parameter whose point is this far from the end of the curve (0 if the curve is shorter). */
+    static double parameterAtDistance(double[] xs, double[] ys, double distance) {
+        if (distance <= 0) {
+            return 1;
+        }
+        double low = 0;
+        double high = 1;
+        for (int i = 0; i < 40; i++) {
+            double middle = (low + high) / 2;
+            double dx = subcurve(xs, middle)[3] - xs[3];
+            double dy = subcurve(ys, middle)[3] - ys[3];
+            if (Math.hypot(dx, dy) > distance) {
+                low = middle;
+            } else {
+                high = middle;
+            }
+        }
+        return low;
+    }
+
+    /** One coordinate of the first part of a cubic curve, cut at parameter t (de Casteljau). */
+    static double[] subcurve(double[] p, double t) {
+        double p01 = p[0] + (p[1] - p[0]) * t;
+        double p12 = p[1] + (p[2] - p[1]) * t;
+        double p23 = p[2] + (p[3] - p[2]) * t;
+        double p012 = p01 + (p12 - p01) * t;
+        double p123 = p12 + (p23 - p12) * t;
+        return new double[]{p[0], p01, p012, p012 + (p123 - p012) * t};
     }
 
     private static void drawArrowhead(GraphicsContext g, double fromX, double fromY, double x, double y, double size) {

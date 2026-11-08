@@ -23,6 +23,17 @@ class CameraAndZoomTest {
     }
 
     @Test
+    void curveIsCutAtTheRequestedDistanceFromItsEnd() {
+        double[] xs = {0, 100, 100, 200};
+        double[] ys = {0, 0, 100, 100};
+        double t = GraphRenderer.parameterAtDistance(xs, ys, 20);
+        double x = GraphRenderer.subcurve(xs, t)[3];
+        double y = GraphRenderer.subcurve(ys, t)[3];
+        assertEquals(20, Math.hypot(200 - x, 100 - y), 1e-6);
+        assertEquals(200, GraphRenderer.subcurve(xs, 1)[3], 1e-9);
+    }
+
+    @Test
     void connectionsFadeWithDistanceFromTheScreen() {
         assertEquals(1, GraphRenderer.closeness(500, 300, 1000, 600));
         assertEquals(0.5, GraphRenderer.closeness(1375, 300, 1000, 600), 1e-9);
