@@ -21,7 +21,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
+import java.util.EnumSet;
 import java.util.Locale;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 
@@ -32,6 +34,7 @@ public final class GraphLab extends BorderPane {
     private final GraphView view = new GraphView(parameters);
     private final VBox controls = new VBox(4);
     private final Label readout = new Label();
+    private Set<LayoutType> sliderOwners = EnumSet.allOf(LayoutType.class);
 
     public GraphLab() {
         setCenter(view);
@@ -104,13 +107,16 @@ public final class GraphLab extends BorderPane {
         checkBox("Agrupar por pasta", view::setGroupByFolder);
 
         title("Por dependência");
+        sliderOwners = EnumSet.of(LayoutType.DEPENDENCY);
         layoutSlider("Folga entre colunas", 30, 400, () -> parameters.columnGap, v -> parameters.columnGap = v);
         layoutSlider("Folga entre linhas", 5, 200, () -> parameters.rowGap, v -> parameters.rowGap = v);
 
         title("Radial");
+        sliderOwners = EnumSet.of(LayoutType.RADIAL);
         layoutSlider("Distância entre anéis", 260, 900, () -> parameters.ringStep, v -> parameters.ringStep = v);
 
         title("Por forças");
+        sliderOwners = EnumSet.of(LayoutType.FORCES);
         layoutSlider("Repulsão", 1000, 80000, () -> parameters.repulsion, v -> parameters.repulsion = v);
         layoutSlider("Força da mola", 0.01, 0.6, () -> parameters.springStrength, v -> parameters.springStrength = v);
         layoutSlider("Comprimento da mola", 100, 900, () -> parameters.springLength, v -> parameters.springLength = v);
@@ -120,6 +126,7 @@ public final class GraphLab extends BorderPane {
         layoutSlider("Atração da pasta", 0, 0.2, () -> parameters.folderForce, v -> parameters.folderForce = v);
 
         title("Card solto (clique duplo no vazio)");
+        sliderOwners = EnumSet.of(LayoutType.DEPENDENCY, LayoutType.RADIAL);
         layoutSlider("Raio magnético", 0, 240, () -> parameters.magneticRadius, v -> parameters.magneticRadius = v);
 
         title("Zoom semântico (escala de cada troca)");
@@ -154,9 +161,12 @@ public final class GraphLab extends BorderPane {
     }
 
     private void layoutSlider(String text, double min, double max, DoubleSupplier getter, Consumer<Double> setter) {
+        Set<LayoutType> owners = sliderOwners;
         addSlider(text, min, max, getter, value -> {
             setter.accept(value);
-            view.recomputeFollowingCenter();
+            if (owners.contains(view.layoutType())) {
+                view.recomputeFollowingCenter();
+            }
         });
     }
 

@@ -218,6 +218,10 @@ public final class GraphView extends Region {
         dirty = true;
     }
 
+    public LayoutType layoutType() {
+        return type;
+    }
+
     public Camera camera() {
         return camera;
     }
