@@ -1,9 +1,10 @@
 package io.github.luanfrombrazil.secondbrain.graph.view;
 
 import io.github.luanfrombrazil.secondbrain.graph.view.camera.Camera;
-import io.github.luanfrombrazil.secondbrain.graph.LayoutType;
+import io.github.luanfrombrazil.secondbrain.graph.layout.Layout;
+import io.github.luanfrombrazil.secondbrain.graph.layout.Layouts;
+import io.github.luanfrombrazil.secondbrain.graph.layout.dependency.DependencyLayout;
 import io.github.luanfrombrazil.secondbrain.graph.lab.Samples;
-import io.github.luanfrombrazil.secondbrain.graph.Parameters;
 import io.github.luanfrombrazil.secondbrain.graph.Node;
 import javafx.application.Platform;
 import javafx.event.Event;
@@ -56,14 +57,14 @@ class ScreenshotTest {
     private AssertionError failure;
 
     private void generate(Path folder) throws IOException {
-        for (LayoutType type : LayoutType.values()) {
-            capture(folder, type, 50, null, type.name().toLowerCase());
+        for (Layout type : Layouts.createAll()) {
+            capture(folder, type, 50, null, type.getClass().getSimpleName().toLowerCase());
         }
-        capture(folder, LayoutType.DEPENDENCY, 200, null, "dependency-200");
-        capture(folder, LayoutType.DEPENDENCY, 10, 0.08, "zoom-farthest");
-        capture(folder, LayoutType.DEPENDENCY, 10, 0.42, "zoom-far");
-        capture(folder, LayoutType.DEPENDENCY, 10, 0.72, "zoom-medium");
-        capture(folder, LayoutType.DEPENDENCY, 10, 1.0, "zoom-near");
+        capture(folder, new DependencyLayout(), 200, null, "dependency-200");
+        capture(folder, new DependencyLayout(), 10, 0.08, "zoom-farthest");
+        capture(folder, new DependencyLayout(), 10, 0.42, "zoom-far");
+        capture(folder, new DependencyLayout(), 10, 0.72, "zoom-medium");
+        capture(folder, new DependencyLayout(), 10, 1.0, "zoom-near");
         dragFromHandleCreatesConnection();
         captureLinkedElements(folder);
         benchmark();
@@ -72,7 +73,7 @@ class ScreenshotTest {
     /** Prints the milliseconds per frame, including the GPU work forced by the snapshot. */
     private void benchmark() {
         for (int size : new int[]{200, 2000, 10000}) {
-            GraphView view = new GraphView(new Parameters());
+            GraphView view = new GraphView(new ViewParameters(), new DependencyLayout());
             view.stopAnimation();
             new Scene(view, WIDTH, HEIGHT);
             view.resize(WIDTH, HEIGHT);
@@ -105,7 +106,7 @@ class ScreenshotTest {
     }
 
     private void captureLinkedElements(Path folder) throws IOException {
-        GraphView view = new GraphView(new Parameters());
+        GraphView view = new GraphView(new ViewParameters(), new DependencyLayout());
         view.stopAnimation();
         new Scene(view, WIDTH, HEIGHT);
         view.resize(WIDTH, HEIGHT);
@@ -126,7 +127,7 @@ class ScreenshotTest {
     }
 
     private void dragFromHandleCreatesConnection() {
-        GraphView view = new GraphView(new Parameters());
+        GraphView view = new GraphView(new ViewParameters(), new DependencyLayout());
         view.stopAnimation();
         new Scene(view, WIDTH, HEIGHT);
         view.resize(WIDTH, HEIGHT);
@@ -170,8 +171,8 @@ class ScreenshotTest {
                 button == MouseButton.PRIMARY, false, button == MouseButton.SECONDARY, false, false, false, null));
     }
 
-    private void capture(Path folder, LayoutType type, int size, Double zoom, String name) throws IOException {
-        GraphView view = new GraphView(new Parameters());
+    private void capture(Path folder, Layout type, int size, Double zoom, String name) throws IOException {
+        GraphView view = new GraphView(new ViewParameters(), new DependencyLayout());
         view.stopAnimation();
         new Scene(view, WIDTH, HEIGHT);
         view.resize(WIDTH, HEIGHT);

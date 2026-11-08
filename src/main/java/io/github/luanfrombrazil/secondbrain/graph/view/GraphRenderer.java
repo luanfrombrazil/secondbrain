@@ -2,7 +2,6 @@ package io.github.luanfrombrazil.secondbrain.graph.view;
 
 import io.github.luanfrombrazil.secondbrain.graph.view.camera.ZoomLevel;
 import io.github.luanfrombrazil.secondbrain.graph.view.camera.Camera;
-import io.github.luanfrombrazil.secondbrain.graph.LayoutType;
 import io.github.luanfrombrazil.secondbrain.graph.view.data.PointNote;
 import io.github.luanfrombrazil.secondbrain.graph.view.data.CardData;
 import io.github.luanfrombrazil.secondbrain.graph.Edge;
@@ -321,7 +320,7 @@ public final class GraphRenderer {
                               GraphView.Visual o, GraphView.Visual d, boolean fromCenters) {
         List<String> siblings = t.graph.dependentsOf(a.source());
         List<String> parents = t.graph.dependenciesOf(a.target());
-        boolean horizontal = t.type == LayoutType.DEPENDENCY && d.x > o.x;
+        boolean horizontal = t.layout.curvesConnections() && d.x > o.x;
         boolean curved = horizontal && (siblings.size() >= 2 || parents.size() >= 2);
         double sx;
         double sy;

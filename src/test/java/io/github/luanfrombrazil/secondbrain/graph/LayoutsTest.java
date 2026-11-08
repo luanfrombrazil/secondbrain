@@ -1,5 +1,8 @@
 package io.github.luanfrombrazil.secondbrain.graph;
 
+import io.github.luanfrombrazil.secondbrain.graph.layout.dependency.DependencyLayout;
+import io.github.luanfrombrazil.secondbrain.graph.layout.force.ForceLayout;
+import io.github.luanfrombrazil.secondbrain.graph.layout.radial.RadialLayout;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -13,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LayoutsTest {
 
-    private final Parameters p = new Parameters();
 
     private static Graph graph(List<String> ids, String... edges) {
         List<Node> nodes = ids.stream().map(id -> new Node(id, null, null)).toList();
@@ -60,7 +62,7 @@ class LayoutsTest {
 
     @Test
     void childWithTwoParentsSitsBetweenThem() {
-        Map<String, Point> pos = new DependencyLayout().compute(graph(List.of("a", "b", "c", "d"), "a>c", "b>c", "c>d"), p);
+        Map<String, Point> pos = new DependencyLayout().compute(graph(List.of("a", "b", "c", "d"), "a>c", "b>c", "c>d"));
         assertEquals((pos.get("a").y() + pos.get("b").y()) / 2, pos.get("c").y(), 1e-9);
         assertEquals(pos.get("c").y(), pos.get("d").y(), 1e-9);
     }
@@ -91,7 +93,7 @@ class LayoutsTest {
     @Test
     void eachCardIsRightOfItsDependencies() {
         Graph g = randomAcyclic(200);
-        Map<String, Point> pos = new DependencyLayout().compute(g, p);
+        Map<String, Point> pos = new DependencyLayout().compute(g);
         for (Edge a : g.connections()) {
             assertTrue(pos.get(a.source()).x() < pos.get(a.target()).x());
         }
@@ -106,21 +108,21 @@ class LayoutsTest {
 
     @Test
     void onlyChildStaysOnParentRow() {
-        Map<String, Point> pos = new DependencyLayout().compute(graph(List.of("a", "b", "c"), "a>b", "b>c"), p);
+        Map<String, Point> pos = new DependencyLayout().compute(graph(List.of("a", "b", "c"), "a>b", "b>c"));
         assertEquals(pos.get("a").y(), pos.get("b").y(), 1e-9);
         assertEquals(pos.get("b").y(), pos.get("c").y(), 1e-9);
     }
 
     @Test
     void twoChildrenAreCenteredOnParent() {
-        Map<String, Point> pos = new DependencyLayout().compute(graph(List.of("a", "b", "c"), "a>b", "a>c"), p);
+        Map<String, Point> pos = new DependencyLayout().compute(graph(List.of("a", "b", "c"), "a>b", "a>c"));
         assertEquals(pos.get("a").y(), (pos.get("b").y() + pos.get("c").y()) / 2, 1e-9);
         assertTrue(pos.get("b").y() != pos.get("c").y());
     }
 
     @Test
     void threeChildrenAreAlsoCentered() {
-        Map<String, Point> pos = new DependencyLayout().compute(graph(List.of("a", "b", "c", "d"), "a>b", "a>c", "a>d"), p);
+        Map<String, Point> pos = new DependencyLayout().compute(graph(List.of("a", "b", "c", "d"), "a>b", "a>c", "a>d"));
         double smallest = Math.min(pos.get("b").y(), Math.min(pos.get("c").y(), pos.get("d").y()));
         double largest = Math.max(pos.get("b").y(), Math.max(pos.get("c").y(), pos.get("d").y()));
         assertEquals(pos.get("a").y(), (smallest + largest) / 2, 1e-9);
@@ -128,17 +130,17 @@ class LayoutsTest {
 
     @Test
     void looseCardWithoutPointGoesToStrip() {
-        Map<String, Point> pos = new DependencyLayout().compute(graph(List.of("a", "b", "loose"), "a>b"), p);
+        Map<String, Point> pos = new DependencyLayout().compute(graph(List.of("a", "b", "loose"), "a>b"));
         assertTrue(pos.get("loose").y() > pos.get("a").y() + Node.HEIGHT);
     }
 
     @Test
     void fixedLooseCardStaysAndPushesNeighbours() {
         Graph base = graph(List.of("a", "b"), "a>b");
-        Map<String, Point> before = new DependencyLayout().compute(base, p);
+        Map<String, Point> before = new DependencyLayout().compute(base);
         Point point = before.get("a");
         Graph withLoose = base.withNode(new Node("loose", null, point));
-        Map<String, Point> after = new DependencyLayout().compute(withLoose, p);
+        Map<String, Point> after = new DependencyLayout().compute(withLoose);
         assertEquals(point, after.get("loose"));
         assertNoOverlap(after);
     }
@@ -146,7 +148,7 @@ class LayoutsTest {
     @Test
     void radialKeepsEachLevelOnTheSameRadius() {
         Graph g = graph(List.of("r", "a", "b", "c", "d"), "r>a", "r>b", "a>c", "b>d");
-        Map<String, Point> pos = new RadialLayout().compute(g, p);
+        Map<String, Point> pos = new RadialLayout().compute(g);
         assertEquals(0, Math.hypot(pos.get("r").x(), pos.get("r").y()), 1e-9);
         assertEquals(Math.hypot(pos.get("a").x(), pos.get("a").y()), Math.hypot(pos.get("b").x(), pos.get("b").y()), 1e-6);
         assertEquals(Math.hypot(pos.get("c").x(), pos.get("c").y()), Math.hypot(pos.get("d").x(), pos.get("d").y()), 1e-6);
@@ -155,14 +157,14 @@ class LayoutsTest {
 
     @Test
     void radialDoesNotOverlapOnLargeGraph() {
-        assertNoOverlap(new RadialLayout().compute(randomAcyclic(200), p));
+        assertNoOverlap(new RadialLayout().compute(randomAcyclic(200)));
     }
 
     @Test
     void forcesAreDeterministicWithoutOverlap() {
         Graph g = randomAcyclic(100);
-        Map<String, Point> a = new ForceLayout().compute(g, p);
-        Map<String, Point> b = new ForceLayout().compute(g, p);
+        Map<String, Point> a = new ForceLayout().compute(g);
+        Map<String, Point> b = new ForceLayout().compute(g);
         assertEquals(a, b);
         assertNoOverlap(a);
     }
@@ -170,6 +172,6 @@ class LayoutsTest {
     @Test
     void forcesDoNotMoveFixedCard() {
         Graph g = graph(List.of("a", "b"), "a>b").withNode(new Node("loose", null, new Point(50, 50)));
-        assertEquals(new Point(50, 50), new ForceLayout().compute(g, p).get("loose"));
+        assertEquals(new Point(50, 50), new ForceLayout().compute(g).get("loose"));
     }
 }

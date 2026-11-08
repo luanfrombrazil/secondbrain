@@ -31,8 +31,11 @@ Os pacotes seguem as partes do produto, com o modelo e a tela juntos, e não cam
 | Pacote | O que tem |
 |---|---|
 | `app` | Inicialização e janela (`SecondBrainApp`) |
-| `graph` | As disposições, sem JavaFX: `Graph`, `LayoutType`, `DependencyLayout`, `RadialLayout`, `ForceLayout` (com `ForceSimulation`) e `Parameters` |
-| `graph.view` | A tela infinita: `GraphView` e `GraphRenderer` |
+| `graph` | O grafo, sem JavaFX: `Graph`, `Node`, `Edge` e `Point` |
+| `graph.layout` | O contrato das disposições: `Layout`, `AnimatedLayout`, `LayoutRun`, `Tunable` e a lista `Layouts` |
+| `graph.layout.dependency`, `.radial`, `.force` | Uma disposição em cada pacote, com os próprios parâmetros. Uma não importa a outra |
+| `graph.layout.common` | O que as disposições em árvore reaproveitam: `Forest`, `LooseCards` e `MagneticRepulsion` |
+| `graph.view` | A tela infinita: `GraphView`, `GraphRenderer` e `ViewParameters` |
 | `graph.view.camera` | `Camera` e `ZoomLevel` |
 | `graph.view.data` | O que o grafo mostra de cada card: `CardData` e `PointNote` |
 | `graph.view.backdrop` | Os fundos do espaço (`Backdrop`) |

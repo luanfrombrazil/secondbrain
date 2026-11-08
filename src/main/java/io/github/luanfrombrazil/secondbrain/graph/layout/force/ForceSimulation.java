@@ -1,5 +1,10 @@
-package io.github.luanfrombrazil.secondbrain.graph;
+package io.github.luanfrombrazil.secondbrain.graph.layout.force;
 
+import io.github.luanfrombrazil.secondbrain.graph.Edge;
+import io.github.luanfrombrazil.secondbrain.graph.Graph;
+import io.github.luanfrombrazil.secondbrain.graph.Node;
+import io.github.luanfrombrazil.secondbrain.graph.Point;
+import io.github.luanfrombrazil.secondbrain.graph.layout.LayoutRun;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -12,7 +17,7 @@ import java.util.stream.IntStream;
  * Cards repel each other (Barnes-Hut), connections and links pull like springs, and the system cools until it stops.
  * The same graph and parameters always give the same result.
  */
-public final class ForceSimulation {
+final class ForceSimulation implements LayoutRun {
 
     private static final double THETA = 0.8;
     private static final double COOLING = 0.08;
@@ -21,7 +26,7 @@ public final class ForceSimulation {
     private static final double FIXED_MASS = 3;
     private static final double GAP = 16;
 
-    private final Parameters p;
+    private final ForceSettings p;
     private final String[] ids;
     private final double[] x;
     private final double[] y;
@@ -34,7 +39,7 @@ public final class ForceSimulation {
     private final Map<String, List<Integer>> folders = new HashMap<>();
     private double alpha = 1;
 
-    public ForceSimulation(Graph graph, Parameters p, Map<String, Point> start) {
+    ForceSimulation(Graph graph, ForceSettings p, Map<String, Point> start) {
         this.p = p;
         ids = graph.nodes().stream().map(Node::id).sorted().toArray(String[]::new);
         int n = ids.length;
@@ -74,6 +79,7 @@ public final class ForceSimulation {
     }
 
     /** Advances one frame. Returns false once the system has settled. */
+    @Override
     public boolean step() {
         if (alpha < MIN_ALPHA) {
             return false;
@@ -102,6 +108,7 @@ public final class ForceSimulation {
         alpha = Math.max(alpha, 0.6);
     }
 
+    @Override
     public Map<String, Point> positions() {
         Map<String, Point> output = new HashMap<>();
         for (int i = 0; i < ids.length; i++) {

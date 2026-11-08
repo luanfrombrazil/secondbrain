@@ -1,5 +1,13 @@
-package io.github.luanfrombrazil.secondbrain.graph;
+package io.github.luanfrombrazil.secondbrain.graph.layout.dependency;
 
+import io.github.luanfrombrazil.secondbrain.graph.Edge;
+import io.github.luanfrombrazil.secondbrain.graph.Graph;
+import io.github.luanfrombrazil.secondbrain.graph.Node;
+import io.github.luanfrombrazil.secondbrain.graph.Point;
+import io.github.luanfrombrazil.secondbrain.graph.layout.Layout;
+import io.github.luanfrombrazil.secondbrain.graph.layout.Tunable;
+import io.github.luanfrombrazil.secondbrain.graph.layout.common.Forest;
+import io.github.luanfrombrazil.secondbrain.graph.layout.common.LooseCards;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -11,14 +19,38 @@ import java.util.TreeMap;
  * Columns by depth: each card sits to the right of everything it depends on.
  * A parent is centered between its children; with a single child, both share a row.
  */
-public final class DependencyLayout extends TreeLayout {
+public final class DependencyLayout implements Layout {
+
+    private double columnGap = 130;
+    private double rowGap = 40;
 
     private static final int ORDERING_PASSES = 3;
 
     @Override
-    protected Map<String, Point> arrange(Graph graph, Forest f, Parameters p) {
-        double stepX = Node.WIDTH + p.columnGap;
-        double stepY = Node.HEIGHT + p.rowGap;
+    public String name() {
+        return "Por dependência";
+    }
+
+    @Override
+    public List<Tunable> tunables() {
+        return List.of(
+                new Tunable("Folga entre colunas", 30, 400, () -> columnGap, v -> columnGap = v),
+                new Tunable("Folga entre linhas", 5, 200, () -> rowGap, v -> rowGap = v));
+    }
+
+    @Override
+    public boolean curvesConnections() {
+        return true;
+    }
+
+    @Override
+    public Map<String, Point> compute(Graph graph) {
+        return LooseCards.place(graph, arrange(graph, new Forest(graph)), rowGap);
+    }
+
+    private Map<String, Point> arrange(Graph graph, Forest f) {
+        double stepX = Node.WIDTH + columnGap;
+        double stepY = Node.HEIGHT + rowGap;
 
         Map<String, Double> ys = new HashMap<>();
         for (int pass = 0; ; pass++) {

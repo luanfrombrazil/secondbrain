@@ -1,5 +1,9 @@
-package io.github.luanfrombrazil.secondbrain.graph;
+package io.github.luanfrombrazil.secondbrain.graph.layout.common;
 
+import io.github.luanfrombrazil.secondbrain.graph.Edge;
+import io.github.luanfrombrazil.secondbrain.graph.Graph;
+import io.github.luanfrombrazil.secondbrain.graph.Node;
+import io.github.luanfrombrazil.secondbrain.graph.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,7 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 /** Moves nearby cards out from under fixed cards and separates whatever touches as a result. */
-final class MagneticRepulsion {
+public final class MagneticRepulsion {
 
     private static final int PASSES = 40;
     private static final double CARD_GAP = 16;
@@ -16,7 +20,7 @@ final class MagneticRepulsion {
     private MagneticRepulsion() {
     }
 
-    static Map<String, Point> apply(Map<String, Point> positions, Set<String> fixedIds, double radius) {
+    public static Map<String, Point> apply(Map<String, Point> positions, Set<String> fixedIds, double radius) {
         if (fixedIds.isEmpty()) {
             return positions;
         }

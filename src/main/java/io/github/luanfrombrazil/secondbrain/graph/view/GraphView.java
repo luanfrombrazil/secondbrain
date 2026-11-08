@@ -1,17 +1,17 @@
 package io.github.luanfrombrazil.secondbrain.graph.view;
 
+import io.github.luanfrombrazil.secondbrain.graph.layout.AnimatedLayout;
+import io.github.luanfrombrazil.secondbrain.graph.layout.Layout;
+import io.github.luanfrombrazil.secondbrain.graph.layout.LayoutRun;
 import io.github.luanfrombrazil.secondbrain.graph.view.camera.ZoomLevel;
 import io.github.luanfrombrazil.secondbrain.graph.view.camera.Camera;
-import io.github.luanfrombrazil.secondbrain.graph.LayoutType;
 import io.github.luanfrombrazil.secondbrain.graph.view.backdrop.Backdrop;
 import io.github.luanfrombrazil.secondbrain.graph.view.data.PointNote;
 import io.github.luanfrombrazil.secondbrain.graph.view.data.CardData;
 import io.github.luanfrombrazil.secondbrain.graph.Edge;
 import io.github.luanfrombrazil.secondbrain.graph.Graph;
 import io.github.luanfrombrazil.secondbrain.graph.Node;
-import io.github.luanfrombrazil.secondbrain.graph.Parameters;
 import io.github.luanfrombrazil.secondbrain.graph.Point;
-import io.github.luanfrombrazil.secondbrain.graph.ForceSimulation;
 import javafx.animation.AnimationTimer;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseButton;
@@ -51,7 +51,7 @@ public final class GraphView extends Region {
 
     private final Canvas canvas = new Canvas();
     private final Camera camera = new Camera();
-    private final Parameters parameters;
+    private final ViewParameters parameters;
     private final GraphRenderer renderer = new GraphRenderer();
 
     Graph graph = new Graph(List.of(), List.of(), List.of());
@@ -59,7 +59,7 @@ public final class GraphView extends Region {
     final Map<String, Visual> visuals = new HashMap<>();
     List<PointNote> pointNotes = List.of();
 
-    LayoutType type = LayoutType.DEPENDENCY;
+    Layout layout;
     Backdrop backdrop = Backdrop.GRID;
     boolean showConnections = true;
     boolean showLinks = true;
@@ -79,7 +79,7 @@ public final class GraphView extends Region {
     double mouseX;
     double mouseY;
 
-    private ForceSimulation simulation;
+    private LayoutRun simulation;
     private boolean dirty = true;
     private long previousFrame;
     private double pressX;
@@ -104,8 +104,9 @@ public final class GraphView extends Region {
         }
     };
 
-    public GraphView(Parameters parameters) {
+    public GraphView(ViewParameters parameters, Layout initialLayout) {
         this.parameters = parameters;
+        this.layout = initialLayout;
         getChildren().add(canvas);
         setMinSize(0, 0);
         canvas.addEventHandler(MouseEvent.ANY, this::onMouse);
@@ -139,12 +140,12 @@ public final class GraphView extends Region {
         followed = null;
         simulation = null;
         Map<String, Point> positions;
-        if (type == LayoutType.FORCES) {
-            simulation = new ForceSimulation(graph, parameters, Map.of());
+        if (layout instanceof AnimatedLayout animated) {
+            simulation = animated.start(graph, Map.of());
             positions = simulation.positions();
             frameWhenSettled = true;
         } else {
-            positions = type.layout().compute(graph, parameters);
+            positions = layout.compute(graph);
         }
         positions.forEach((id, p) -> visuals.put(id, new Visual(p)));
         frameTargets();
@@ -153,21 +154,21 @@ public final class GraphView extends Region {
     }
 
     /** Changing or forcing the layout sends loose cards to the strip (D-58) and recenters the camera. */
-    public void reorganize(LayoutType next) {
-        type = next;
+    public void reorganize(Layout next) {
+        layout = next;
         graph = graph.withoutFixedPoints();
         recompute();
         frameTargets();
-        frameWhenSettled = type == LayoutType.FORCES;
+        frameWhenSettled = layout instanceof AnimatedLayout;
     }
 
     /** A parameter changed: arranges again without touching the camera or loose cards. */
     public void recompute() {
-        if (type == LayoutType.FORCES) {
-            simulation = new ForceSimulation(graph, parameters, currentPositions());
+        if (layout instanceof AnimatedLayout animated) {
+            simulation = animated.start(graph, currentPositions());
         } else {
             simulation = null;
-            setTargets(type.layout().compute(graph, parameters));
+            setTargets(layout.compute(graph));
         }
         dirty = true;
     }
@@ -227,12 +228,12 @@ public final class GraphView extends Region {
         dirty = true;
     }
 
-    Parameters parameters() {
+    ViewParameters parameters() {
         return parameters;
     }
 
-    public LayoutType layoutType() {
-        return type;
+    public Layout currentLayout() {
+        return layout;
     }
 
     public Camera camera() {

@@ -1,8 +1,10 @@
 package io.github.luanfrombrazil.secondbrain.graph.lab;
 
-import io.github.luanfrombrazil.secondbrain.graph.LayoutType;
+import io.github.luanfrombrazil.secondbrain.graph.layout.Layout;
+import io.github.luanfrombrazil.secondbrain.graph.layout.Layouts;
+import io.github.luanfrombrazil.secondbrain.graph.layout.Tunable;
 import io.github.luanfrombrazil.secondbrain.graph.view.backdrop.Backdrop;
-import io.github.luanfrombrazil.secondbrain.graph.Parameters;
+import io.github.luanfrombrazil.secondbrain.graph.view.ViewParameters;
 import io.github.luanfrombrazil.secondbrain.graph.view.GraphView;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -19,21 +21,22 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
+import javafx.util.StringConverter;
 
-import java.util.EnumSet;
+import java.util.List;
+
 import java.util.Locale;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 
 /** The graph with sample data and controls to tune the physics live. */
 public final class GraphLab extends BorderPane {
 
-    private final Parameters parameters = new Parameters();
-    private final GraphView view = new GraphView(parameters);
+    private final List<Layout> layouts = Layouts.createAll();
+    private final ViewParameters parameters = new ViewParameters();
+    private final GraphView view = new GraphView(parameters, layouts.getFirst());
     private final VBox controls = new VBox(4);
     private final Label readout = new Label();
-    private Set<LayoutType> sliderOwners = EnumSet.allOf(LayoutType.class);
 
     public GraphLab() {
         setCenter(view);
@@ -62,10 +65,21 @@ public final class GraphLab extends BorderPane {
         controls.setStyle("-fx-padding: 12;");
 
         title("Exemplo");
-        ComboBox<LayoutType> layout = new ComboBox<>();
-        layout.getItems().addAll(LayoutType.values());
-        layout.setValue(LayoutType.DEPENDENCY);
+        ComboBox<Layout> layout = new ComboBox<>();
+        layout.getItems().addAll(layouts);
+        layout.setValue(layouts.getFirst());
         layout.setMaxWidth(Double.MAX_VALUE);
+        layout.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Layout each) {
+                return each == null ? "" : each.name();
+            }
+
+            @Override
+            public Layout fromString(String text) {
+                return null;
+            }
+        });
         layout.setOnAction(e -> view.reorganize(layout.getValue()));
 
         ComboBox<Backdrop> backdrop = new ComboBox<>();
@@ -94,7 +108,7 @@ public final class GraphLab extends BorderPane {
         Button copy = new Button("Copiar valores");
         copy.setOnAction(e -> {
             ClipboardContent content = new ClipboardContent();
-            content.putString(parameters.asText());
+            content.putString(settingsAsText());
             Clipboard.getSystemClipboard().setContent(content);
         });
         HBox buttons = new HBox(6, reorganize, recenter, copy);
@@ -104,24 +118,12 @@ public final class GraphLab extends BorderPane {
         checkBox("Conexões", view::setShowConnections);
         checkBox("Links (só de perto)", view::setShowLinks);
 
-        title("Por dependência");
-        sliderOwners = EnumSet.of(LayoutType.DEPENDENCY);
-        layoutSlider("Folga entre colunas", 30, 400, () -> parameters.columnGap, v -> parameters.columnGap = v);
-        layoutSlider("Folga entre linhas", 5, 200, () -> parameters.rowGap, v -> parameters.rowGap = v);
-
-        title("Radial");
-        sliderOwners = EnumSet.of(LayoutType.RADIAL);
-        layoutSlider("Distância entre anéis", 260, 900, () -> parameters.ringStep, v -> parameters.ringStep = v);
-
-        title("Por forças");
-        sliderOwners = EnumSet.of(LayoutType.FORCES);
-        layoutSlider("Repulsão", 1000, 80000, () -> parameters.repulsion, v -> parameters.repulsion = v);
-        layoutSlider("Força da mola", 0.01, 0.6, () -> parameters.springStrength, v -> parameters.springStrength = v);
-        layoutSlider("Comprimento da mola", 100, 900, () -> parameters.springLength, v -> parameters.springLength = v);
-        layoutSlider("Gravidade", 0, 0.12, () -> parameters.gravity, v -> parameters.gravity = v);
-        layoutSlider("Atrito (velocidade mantida)", 0.2, 0.95, () -> parameters.friction, v -> parameters.friction = v);
-        layoutSlider("Atração da pasta", 0, 0.2, () -> parameters.folderForce, v -> parameters.folderForce = v);
-
+        for (Layout each : layouts) {
+            if (!each.tunables().isEmpty()) {
+                title(each.name());
+                each.tunables().forEach(tunable -> layoutSlider(each, tunable));
+            }
+        }
 
         title("Setas");
         addSlider("Espessura", 0.5, 8, () -> parameters.arrowWidth, value -> {
@@ -161,14 +163,25 @@ public final class GraphLab extends BorderPane {
         controls.getChildren().add(checkBox);
     }
 
-    private void layoutSlider(String text, double min, double max, DoubleSupplier getter, Consumer<Double> setter) {
-        Set<LayoutType> owners = sliderOwners;
-        addSlider(text, min, max, getter, value -> {
-            setter.accept(value);
-            if (owners.contains(view.layoutType())) {
+    /** A setting only rearranges the graph when its layout is the one on screen. */
+    private void layoutSlider(Layout owner, Tunable tunable) {
+        addSlider(tunable.label(), tunable.min(), tunable.max(), tunable.getter(), value -> {
+            tunable.setter().accept(value);
+            if (view.currentLayout() == owner) {
                 view.recomputeFollowingCenter();
             }
         });
+    }
+
+    private String settingsAsText() {
+        StringBuilder text = new StringBuilder();
+        for (Layout each : layouts) {
+            for (Tunable tunable : each.tunables()) {
+                text.append(each.name()).append(" · ").append(tunable.label()).append(" = ")
+                        .append(formatNumber(tunable.getter().getAsDouble())).append(System.lineSeparator());
+            }
+        }
+        return text.append(parameters.asText()).toString();
     }
 
     private void zoomSlider(String text, DoubleSupplier getter, Consumer<Double> setter) {

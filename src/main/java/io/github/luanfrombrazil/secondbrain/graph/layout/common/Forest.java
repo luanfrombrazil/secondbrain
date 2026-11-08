@@ -1,5 +1,9 @@
-package io.github.luanfrombrazil.secondbrain.graph;
+package io.github.luanfrombrazil.secondbrain.graph.layout.common;
 
+import io.github.luanfrombrazil.secondbrain.graph.Edge;
+import io.github.luanfrombrazil.secondbrain.graph.Graph;
+import io.github.luanfrombrazil.secondbrain.graph.Node;
+import io.github.luanfrombrazil.secondbrain.graph.Point;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -10,13 +14,13 @@ import java.util.Map;
  * The connected nodes, organized as trees. Each node has a main parent, chosen from the layer
  * right before it. Other dependencies remain connections but do not decide the position.
  */
-final class Forest {
+public final class Forest {
 
-    final List<String> roots = new ArrayList<>();
-    final Map<String, List<String>> children = new HashMap<>();
+    public final List<String> roots = new ArrayList<>();
+    public final Map<String, List<String>> children = new HashMap<>();
     private final Map<String, Integer> leaves = new HashMap<>();
 
-    Forest(Graph graph) {
+    public Forest(Graph graph) {
         Comparator<String> order = Comparator.naturalOrder();
         for (Node node : graph.nodes()) {
             if (graph.loose(node.id())) {
@@ -45,7 +49,7 @@ final class Forest {
         return result;
     }
 
-    int leaves(String id) {
+    public int leaves(String id) {
         return leaves.get(id);
     }
 }
