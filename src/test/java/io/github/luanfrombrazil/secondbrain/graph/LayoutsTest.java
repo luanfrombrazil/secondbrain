@@ -59,6 +59,13 @@ class LayoutsTest {
     }
 
     @Test
+    void childWithTwoParentsSitsBetweenThem() {
+        Map<String, Point> pos = new DependencyLayout().compute(graph(List.of("a", "b", "c", "d"), "a>c", "b>c", "c>d"), p);
+        assertEquals((pos.get("a").y() + pos.get("b").y()) / 2, pos.get("c").y(), 1e-9);
+        assertEquals(pos.get("c").y(), pos.get("d").y(), 1e-9);
+    }
+
+    @Test
     void connectionThatClosesACycleIsRefused() {
         Graph g = graph(List.of("a", "b", "c"), "a>b", "b>c");
         assertFalse(g.canConnect("c", "a"));

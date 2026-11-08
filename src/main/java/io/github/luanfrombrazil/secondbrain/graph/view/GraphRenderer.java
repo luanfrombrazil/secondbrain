@@ -243,7 +243,7 @@ final class GraphRenderer {
         return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
     }
 
-    // Arrows: parent with two or more children, all curved; parent with one child, straight.
+    // Arrows: curved when the parent has several children or the child has several parents; otherwise straight.
 
     private void drawConnections(GraphView t, GraphicsContext g, Camera c, double width, double height) {
         boolean dots = t.level == ZoomLevel.FARTHEST;
@@ -280,7 +280,8 @@ final class GraphRenderer {
     private void drawArrow(GraphView t, GraphicsContext g, Camera c, Edge a,
                               GraphView.Visual o, GraphView.Visual d, boolean fromCenters) {
         List<String> siblings = t.graph.dependentsOf(a.source());
-        boolean curved = siblings.size() >= 2;
+        List<String> parents = t.graph.dependenciesOf(a.target());
+        boolean curved = siblings.size() >= 2 || parents.size() >= 2;
         double sx;
         double sy;
         double ex;
@@ -324,8 +325,9 @@ final class GraphRenderer {
             double length = Math.max(1, Math.hypot(x2 - x1, y2 - y1));
             double nx = -(y2 - y1) / length;
             double ny = (x2 - x1) / length;
-            int index = siblings.indexOf(a.target());
-            double arc = length * 0.16 * (index * 2 < siblings.size() ? 1 : -1);
+            boolean fansOut = siblings.size() >= 2;
+            int index = fansOut ? siblings.indexOf(a.target()) : parents.indexOf(a.source());
+            double arc = length * 0.16 * (index * 2 < (fansOut ? siblings : parents).size() ? 1 : -1);
             c2x = x1 + (x2 - x1) * 0.67 + nx * arc;
             c2y = y1 + (y2 - y1) * 0.67 + ny * arc;
             g.bezierCurveTo(x1 + (x2 - x1) * 0.33 + nx * arc, y1 + (y2 - y1) * 0.33 + ny * arc,
