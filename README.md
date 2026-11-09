@@ -8,6 +8,40 @@ Cada card é a miniaturização de uma nota em **Markdown** ou **LaTeX**, à sua
 
 ---
 
+## Telas
+
+<sub>Protótipos do Figma; a interface atual do app ainda é provisória.</sub>
+
+**Grafo: criar conexão arrastando**
+
+![Grafo: criar conexão arrastando](docs/imagens/01-grafo-criar-conexao.png)
+
+**Kanban agrupado por estado**
+
+![Kanban agrupado por estado](docs/imagens/02-kanban-por-estado.png)
+
+**Edição do card com a nota (duplo clique)**
+
+![Edição do card com a nota (duplo clique)](docs/imagens/03-edicao-do-card-com-nota.png)
+
+**Grafo com o explorador recolhido**
+
+![Grafo com o explorador recolhido](docs/imagens/04-grafo-explorador-recolhido.png)
+
+**Disposição radial em bolinhas**
+
+![Disposição radial em bolinhas](docs/imagens/05-radial-bolinhas.png)
+
+**Disposição radial afastada (miniaturas)**
+
+![Disposição radial afastada (miniaturas)](docs/imagens/06-radial-miniaturas.png)
+
+**Calendário com evento do Google**
+
+![Calendário com evento do Google](docs/imagens/07-calendario-evento-google.png)
+
+---
+
 ## A ideia em uma imagem
 
 ```
@@ -81,8 +115,8 @@ Exemplos:
 
 | Documento                                    | Conteúdo                                                                                      |
 | -------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| [Grafo e conexões](docs/grafo-e-conexoes.md) | Trilhas, conexões, dependências, zoom semântico, auto-organização e bolinhas                  |
-| [Cards e notas](docs/cards-e-notas.md)       | Tipos de card, estrutura, grafo, arquivos, notas pontuais, notas fantasmas e o editor do card |
-| [LaTeX](docs/latex.md)                       | Formato das notas, leitura, edição e compilação                                               |
-| [Interface](docs/interface.md)               | Telas desenhadas no Figma, uma por uma                                                        |
-| [Stack](docs/stack.md)                       | Java 25, JavaFX e Maven: versões, como rodar e os pacotes do código                           |
+| [Grafo e conexões](https://github.com/luanfrombrazil/secondbrain/blob/dev/docs/grafo-e-conexoes.md) | Trilhas, conexões, dependências, zoom semântico, auto-organização e bolinhas                  |
+| [Cards e notas](https://github.com/luanfrombrazil/secondbrain/blob/dev/docs/cards-e-notas.md)       | Tipos de card, estrutura, grafo, arquivos, notas pontuais, notas fantasmas e o editor do card |
+| [LaTeX](https://github.com/luanfrombrazil/secondbrain/blob/dev/docs/latex.md)                       | Formato das notas, leitura, edição e compilação                                               |
+| [Interface](https://github.com/luanfrombrazil/secondbrain/blob/dev/docs/interface.md)               | Telas desenhadas no Figma, uma por uma                                                        |
+| [Stack](https://github.com/luanfrombrazil/secondbrain/blob/dev/docs/stack.md)                       | Java 25, JavaFX e Maven: versões, como rodar e os pacotes do código                           |
