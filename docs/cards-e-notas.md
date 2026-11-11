@@ -44,7 +44,7 @@ Inspirada nas caixas de um diagrama de classes, com compartimentos separados por
 
 ## Grafo interno (card maximizado)
 
-- O botão maximizar abre um **modal** com um espaço quadriculado próprio.
+- O botão maximizar **troca a tela inteira** pelo grafo interno, com o caminho no topo. Não é um modal.
 - **Os cards internos são exatamente iguais aos de fora.** É um grafo dentro do card. Em Cálculo II: Funções de várias variáveis → Limites → Derivadas parciais → (Gradiente, Máximos e mínimos → Lagrange, Integrais duplas → Integrais triplas e Coordenadas polares).
 - Os cards internos que não têm grafo próprio não mostram o botão maximizar.
 - O espaço interno também aceita **notas** e **arquivos**, ligados aos cards por links.
@@ -52,7 +52,7 @@ Inspirada nas caixas de um diagrama de classes, com compartimentos separados por
 
 ## Nota principal e notas internas
 
-- O modal alterna entre **Nota** e **Grafo**.
+- A tela do card alterna entre **Nota** e **Grafo**.
 - **Cálculo II** tem uma **nota global principal**.
 - **Clicar num card interno** abre a nota dele. Uma **seta de voltar** leva à nota principal, e o caminho completo aparece no topo (Engenharia de Computação › Cálculo II › Derivadas parciais).
 - O progresso mostrado no topo é o do card aberto.
@@ -84,7 +84,7 @@ A solução para editar as informações da nota que não são texto.
   - **vídeos** (colar o link do YouTube) e **relacionados** (vincular nota, livro ou repositório);
   - rodapé com **Excluir card** (ou Descartar, no card novo) e **Pronto**.
 - **No card novo:** o título vem focado, a escolha do tipo aparece em destaque e as seções vêm vazias.
-- **Com o PDF:** o PDF da nota aparece à direita, com abas para editar o LaTeX, abrir em página dupla ou recolher.
+- **Com o PDF:** o PDF da nota aparece à direita, com abas para editar o LaTeX ou recolher, o zoom (− e +) e o botão **Salvar PDF**.
 - **Nota Markdown:** o editor `.md` à esquerda e o papel à direita, feito de HTML no WebView e atualizado a cada pausa, sem compilação. Clique duplo no papel leva o cursor ao trecho correspondente.
 - **Interface única:** editor do card à esquerda, editor `.tex` no centro e PDF à direita, tudo na mesma tela.
 

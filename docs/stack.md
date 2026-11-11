@@ -26,19 +26,28 @@ mvn javafx:run
 
 Os pacotes seguem as partes do produto, com o modelo e a tela juntos, e não camadas técnicas.
 
+**O código é todo em inglês** (pacotes, classes, variáveis e comentários), por exemplo `CardType` para tipo de card. O texto que o usuário vê continua em português.
+
 | Pacote | O que tem |
 |---|---|
-| `app` | Inicialização e janela (`SecondBrainApp`) e um grafo de exemplo (`Exemplo`) |
-| `trilha` | O grafo: `Trilha`, `Conexao`, `Link` e a tela `TrilhaView` |
-| `trilha.disposicao` | Os arranjos do grafo: `PorDependencia`, `PorForcas` (com `SimulacaoDeForcas`) e `Radial`, escolhidos no `MenuDeDisposicao` |
-| `trilha.fundo` | Os fundos do espaço: `Grade`, `Quadriculado`, `Pontilhado`, `Pautado` e `Liso`, escolhidos no `MenuDeFundo` |
-| `card` | `Card`, `CardView`, `Estado` e `TipoDeCard` |
-| `nota` | `Nota`, com `NotaMarkdown` e `NotaLatex` |
-| `propriedade` | `Propriedade`, `Propriedades` e as propriedades prontas: `tarefas`, `progresso` e `texto` |
+| `app` | Inicialização e janela (`SecondBrainApp`) |
+| `track`, `card`, `property` | O modelo: trilhas e regras de estado, cards e propriedades |
+| `vault` | O acervo no disco: `Vault`, `Slug` e os arquivos YAML |
+| `graph` | O grafo, sem JavaFX: `Graph`, `Node`, `Edge` e `Point` |
+| `graph.layout` | O contrato das disposições: `Layout`, `AnimatedLayout`, `LayoutRun`, `Tunable` e a lista `Layouts` |
+| `graph.layout.dependency`, `.radial`, `.force` | Uma disposição em cada pacote, com os próprios parâmetros. Uma não importa a outra |
+| `graph.layout.common` | O que as disposições em árvore reaproveitam: `Forest`, `LooseCards` e `MagneticRepulsion` |
+| `graph.view` | A tela infinita: `GraphView`, `GraphRenderer` e `ViewParameters` |
+| `graph.view.camera` | `Camera` e `ZoomLevel` |
+| `graph.view.data` | O que o grafo mostra de cada card: `CardData` e `PointNote` |
+| `graph.view.backdrop` | O contrato dos fundos: `Backdrop` e a lista `Backdrops`. `.plain`, `.lined`, `.dotted` e `.grid` têm um padrão cada, e `.common` tem a grade de dois níveis que eles reaproveitam |
+| `graph.lab` | O laboratório para ajustar a física (`GraphLab`) e os exemplos (`Samples`) |
+
+Os próximos pacotes nascem com as fases de [implementacao.md](implementacao.md): `note` (as notas, fase 3) e uma visualização por pacote, como o `graph`: `kanban`, `list` e `calendar` (fase 5). Cada disposição e cada fundo é um pacote próprio, plugável pela sua lista (`Layouts`, `Backdrops`). O laboratório (`graph.lab`) continua como uma tela à parte, fora do app.
 
 ## Dependências
 
-Hoje a única dependência é o `javafx-controls`. Os arranjos do grafo, inclusive a simulação de forças, são implementados no próprio projeto.
+O app usa o `javafx-controls` e o SnakeYAML Engine (arquivos de `.secondbrain/`), e os testes usam o JUnit. As disposições, inclusive a simulação de forças, são implementadas no próprio projeto.
 
 ## O que ainda não tem biblioteca
 

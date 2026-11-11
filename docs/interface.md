@@ -12,7 +12,7 @@ O que já está desenhado no Figma, seção por seção.
 ## Componentes
 
 - **Card de trilha:** variantes recolhido e expandido, mais a propriedade Maximizar.
-- **Card de trilha — níveis de zoom:** variantes Muito longe, Longe e Médio.
+- **Card de trilha — níveis de zoom:** variantes Miniatura e Médio.
 - **Nota, Livro avulso e Arquivo:** o arquivo tem as variantes recolhido e expandido, com a prévia 9:16.
 - **Interruptor:** ligado e desligado.
 
@@ -23,22 +23,29 @@ O que já está desenhado no Figma, seção por seção.
 3. **Nota de um card interno:** Derivadas parciais, com a seta de voltar e o caminho completo.
 4. **Edição LaTeX:** o `.tex` e o PDF lado a lado.
 5. **Nota espiando:** a tira do papel na borda direita, com a aba **<**.
-6. **Nota ao lado:** o papel aberto sobre o grafo, com as abas **<** e **>**.
-7. **Página dupla:** duas páginas lado a lado, com a aba **>**.
+6. **Nota ao lado:** o papel aberto sobre o grafo, com a aba **>**.
 
 ## Níveis de zoom
 
 Do mais longe para o mais perto:
 
-1. **Mais afastado:** bolinhas na cor do estado, próximas pelo quanto se referenciam, com tamanho pelo peso e hover com o nome.
-2. **Muito afastado:** miniaturas sem texto, só a faixa do estado e o progresso, com as conexões.
-3. **Afastado:** miniaturas maiores, com hover mostrando o título e o progresso.
-4. **Médio:** o card menor, com título e progresso legíveis.
-5. **Próximo:** o card completo, com as notas pontuais e os links.
+1. **Bolinha:** bolinhas na cor do estado, próximas pelo quanto se referenciam, com tamanho pelo peso e hover com o nome.
+2. **Miniatura:** miniaturas sem texto, só a faixa do estado e o progresso, com as conexões e hover mostrando o título e o progresso.
+3. **Médio:** o card menor, com título e progresso legíveis.
+4. **Próximo:** o card completo, com as notas pontuais e os links.
 
 ## Tela inicial
 
 Ao abrir o app (depois da primeira vez), aparece uma tela no estilo da primeira abertura com duas listas: os **cards modificados recentemente** e os **cards com Data perto de hoje**, de todas as trilhas. Clicar num card abre a trilha dele com a câmera no card. Regras em [modelagem.md, 5.1](modelagem.md).
+
+## Configurações › Grafo
+
+Uma aba das configurações com os ajustes do grafo que vieram do laboratório. Os valores e o que cada um faz estão em [grafo-e-conexoes.md, "Ajustes do grafo"](grafo-e-conexoes.md).
+
+- **Cinco grupos, em duas colunas:** Setas (espessura), Por dependência e Radial à esquerda; Por forças e Zoom semântico à direita. O fundo não tem controles aqui: o tipo de fundo fica em Visualização padrão, e o desenho da grade é fixo. O resfriamento e o raio magnético do card solto são fixos e não aparecem.
+- **Cada ajuste é uma linha** com o nome, um controle deslizante e o valor ao lado, que também aceita digitar. Sem texto de ajuda na tela.
+- **Prévia ao vivo:** um grafo pequeno abaixo dos controles, com o fundo, se rearruma enquanto o controle desliza. A prévia mostra a disposição do grupo que está sendo mexido. Na tela do Figma ela está em Por forças, com as conexões retas.
+- **Restaurar padrões** no rodapé volta todos os valores ao padrão.
 
 ## Explorador e nova trilha
 
@@ -61,7 +68,7 @@ A página **Telas v2** do Figma é a versão atual. Cada interação dela, com o
 - **Visualizações:** kanban agrupado por estado e por outra seleção, lista, grafo com filtros, calendário em mês e em semana.
 - **Grafo:** criar conexão arrastando, notas fantasmas, zoom próximo com elementos, adicionar arquivo, link automático, buscar arquivo e soltar num card.
 - **Notas, bibliografia e LaTeX:** compilando, erro, biblioteca e compor documento.
-- **App:** primeira abertura, troca rápida (Ctrl Space), paleta de comandos (Ctrl P) e as configurações.
+- **App:** primeira abertura, troca rápida (Ctrl Space), paleta de comandos (Ctrl P) e as configurações, incluindo a aba **Grafo** com os ajustes da física e do zoom.
 - **Explorador recolhido, card expandido, níveis de zoom, disposição radial, prévia do PDF e edição do card.**
 
 ## Quadro de ideias

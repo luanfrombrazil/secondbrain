@@ -171,7 +171,7 @@ Para não perder de vista o diferencial:
 
 - **Dependência como estrutura.** Conexões de pré-requisito com estados (bloqueado, disponível, em andamento, concluído) e disposição calculada, como uma árvore de habilidades. Nenhum dos apps olhados faz isso nativamente.
 - **Zoom semântico** com bolinhas, miniaturas e card completo.
-- **LaTeX de primeira classe:** compilação embutida quase em tempo real, SyncTeX nos dois sentidos e compor um documento a partir de um caminho no grafo. No Obsidian isso exige plugins (Latex Suite) e não gera PDF.
+- **LaTeX de primeira classe:** compilação embutida e rápida (Ctrl S), SyncTeX nos dois sentidos e compor um documento a partir de um caminho no grafo. No Obsidian isso exige plugins (Latex Suite) e não gera PDF.
 - **Notas fantasmas** sugeridas a partir das seções da nota.
 - **Grafo interno recursivo:** cada card pode ter um grafo próprio.
 - **Mesmos dados, várias visualizações** (grafo, kanban, lista, calendário), com o calendário no padrão iCalendar.
