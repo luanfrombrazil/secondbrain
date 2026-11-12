@@ -1,0 +1,15 @@
+# Build
+target/
+
+# IDE
+.idea/
+*.iml
+
+# Obsidian
+.obsidian/
+
+# Material interno, fora do git
+docs/interno/
+
+# Programas externos baixados
+tools/
